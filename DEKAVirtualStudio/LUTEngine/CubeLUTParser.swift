@@ -82,7 +82,7 @@ enum CubeLUTParser {
         var values: [SIMD3<Float>] = []
 
         var lineNo = 0
-        for rawLine in text.split(omittingEmptySubsequences: false, whereSeparator: { $0 == "\n" || $0 == "\r" }) {
+        for rawLine in text.split(omittingEmptySubsequences: true, whereSeparator: { $0.isNewline }) {
             lineNo += 1
             let line = rawLine.trimmingCharacters(in: .whitespaces)
             if line.isEmpty || line.hasPrefix("#") { continue }

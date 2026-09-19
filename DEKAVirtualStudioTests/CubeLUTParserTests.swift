@@ -11,7 +11,14 @@ final class CubeLUTParserTests: XCTestCase {
             let v = transform(SIMD3(Float(r) / d, Float(g) / d, Float(b) / d))
             lines.append(String(format: "%.6f %.6f %.6f", v.x, v.y, v.z))
         } } }
-        return lines.joined(separator: "\r\n")
+        return lines.joined(separator: "\n")
+    }
+
+    func testCRLFLineEndings() throws {
+        let text = "TITLE \"CRLF\"\r\nLUT_3D_SIZE 2\r\n0 0 0\r\n1 0 0\r\n0 1 0\r\n1 1 0\r\n0 0 1\r\n1 0 1\r\n0 1 1\r\n1 1 1\r\n"
+        let lut = try CubeLUTParser.parse(text: text)
+        XCTAssertEqual(lut.size, 2)
+        XCTAssertEqual(lut.values.count, 8)
     }
 
     func testParsesStandardSizes() throws {

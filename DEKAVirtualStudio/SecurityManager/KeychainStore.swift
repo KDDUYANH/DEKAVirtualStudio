@@ -30,6 +30,13 @@ struct KeychainStore {
          kSecAttrAccount as String: account]
     }
 
+    private static let simFallback = Locked<[String: Data]>([:])
+    private func fallbackKey(_ account: String) -> String { "\(service):\(account)" }
+
+    private static func isMissingEntitlement(_ status: OSStatus) -> Bool {
+        status == errSecMissingEntitlement || status == -34018
+    }
+
     func set(_ data: Data, for account: String) throws {
         var query = base(account)
         let attrs: [String: Any] = [kSecValueData as String: data,
@@ -38,26 +45,39 @@ struct KeychainStore {
         if status == errSecItemNotFound {
             query.merge(attrs) { $1 }
             let add = SecItemAdd(query as CFDictionary, nil)
+            if Self.isMissingEntitlement(add) {
+                Self.simFallback.mutate { $0[fallbackKey(account)] = data }
+                return
+            }
             guard add == errSecSuccess else { throw KeychainError.unexpectedStatus(add) }
+        } else if Self.isMissingEntitlement(status) {
+            Self.simFallback.mutate { $0[fallbackKey(account)] = data }
         } else if status != errSecSuccess {
             throw KeychainError.unexpectedStatus(status)
         }
     }
 
     func data(for account: String) throws -> Data? {
+        if let fallback = Self.simFallback.get()[fallbackKey(account)] { return fallback }
         var query = base(account)
         query[kSecReturnData as String] = true
         query[kSecMatchLimit as String] = kSecMatchLimitOne
         var out: AnyObject?
         let status = SecItemCopyMatching(query as CFDictionary, &out)
         if status == errSecItemNotFound { return nil }
+        if Self.isMissingEntitlement(status) {
+            return Self.simFallback.get()[fallbackKey(account)]
+        }
         guard status == errSecSuccess else { throw KeychainError.unexpectedStatus(status) }
         return out as? Data
     }
 
     func delete(_ account: String) throws {
+        Self.simFallback.mutate { $0.removeValue(forKey: fallbackKey(account)) }
         let status = SecItemDelete(base(account) as CFDictionary)
-        guard status == errSecSuccess || status == errSecItemNotFound else { throw KeychainError.unexpectedStatus(status) }
+        guard status == errSecSuccess || status == errSecItemNotFound || Self.isMissingEntitlement(status) else {
+            throw KeychainError.unexpectedStatus(status)
+        }
     }
 
     // Convenience
