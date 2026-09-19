@@ -168,4 +168,15 @@ final class SRTConfigurationTests: XCTestCase {
         XCTAssertEqual(url, "srt://192.168.1.55:9000?mode=caller&latency=150&streamid=read:program")
         XCTAssertEqual(output.srtReturnURL, url)
     }
+
+    func testBrowserBackgroundSettings() {
+        var bg = BackgroundSettings()
+        XCTAssertEqual(bg.kind, .gradient)
+        bg.kind = .browser
+        bg.browserURL = "https://deka.live/dashboard"
+        bg.browserFPS = 60
+        XCTAssertEqual(bg.kind, .browser)
+        XCTAssertEqual(bg.browserURL, "https://deka.live/dashboard")
+        XCTAssertEqual(bg.browserFPS, 60)
+    }
 }

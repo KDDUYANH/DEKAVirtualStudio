@@ -272,6 +272,20 @@ struct BackgroundPanel: View {
                 ValueSlider(label: "POSITION Y", value: studio.sceneBinding(\.background.positionY), range: -0.5...0.5)
                 ValueSlider(label: "BLUR", value: studio.sceneBinding(\.background.blur), range: 0...120, format: "%.0f px")
             }
+            if bg.kind == .browser {
+                TextField("Web URL (https://...)", text: studio.sceneBinding(\.background.browserURL))
+                    .textFieldStyle(.roundedBorder).textInputAutocapitalization(.never).autocorrectionDisabled()
+                HStack(spacing: 8) {
+                    Button("RELOAD") { studio.reloadBrowserBackground() }.font(Theme.label)
+                    Spacer()
+                    Button("APPLE") { studio.sceneBinding(\.background.browserURL).wrappedValue = "https://apple.com" }.font(Theme.label)
+                    Button("CLOCK") { studio.sceneBinding(\.background.browserURL).wrappedValue = "https://time.is" }.font(Theme.label)
+                }
+                ValueSlider(label: "SCALE", value: studio.sceneBinding(\.background.scale), range: 0.5...3, neutral: 1)
+                ValueSlider(label: "POSITION X", value: studio.sceneBinding(\.background.positionX), range: -0.5...0.5)
+                ValueSlider(label: "POSITION Y", value: studio.sceneBinding(\.background.positionY), range: -0.5...0.5)
+                ValueSlider(label: "BLUR", value: studio.sceneBinding(\.background.blur), range: 0...120, format: "%.0f px")
+            }
             ValueSlider(label: "OPACITY", value: studio.sceneBinding(\.background.opacity), range: 0...1, neutral: 1)
             ValueSlider(label: "BRIGHTNESS", value: studio.sceneBinding(\.background.brightness))
             ValueSlider(label: "CONTRAST", value: studio.sceneBinding(\.background.contrast))

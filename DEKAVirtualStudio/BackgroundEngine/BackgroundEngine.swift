@@ -53,12 +53,21 @@ final class BackgroundEngine {
 
     // MARK: Render-thread API
 
+    private var browserBackground: WebBrowserBackground?
+
+    private func activeBrowserBackground() -> WebBrowserBackground {
+        if let b = browserBackground { return b }
+        let b = WebBrowserBackground(context: context)
+        browserBackground = b
+        return b
+    }
+
     /// Returns the background texture for these settings, or nil if it isn't ready yet
     /// (a load is kicked off; the program shows the shader colour meanwhile — never stalls).
     func frame(for s: BackgroundSettings, commandBuffer: MTLCommandBuffer) -> BackgroundFrame? {
-        guard let asset = s.assetName else { return nil }
         switch s.kind {
         case .image:
+            guard let asset = s.assetName else { return nil }
             let key = "\(asset)|\(Int(s.blur))"
             if let tex = images.get()[key] {
                 return BackgroundFrame(texture: tex, keepAlive: nil, aspectFix: aspectFix(tex))
@@ -66,9 +75,14 @@ final class BackgroundEngine {
             preloadImage(asset: asset, blurRadius: Int(s.blur))
             return nil
         case .video:
-            guard let video = videoBackground(asset: asset) else { return nil }
+            guard let asset = s.assetName, let video = videoBackground(asset: asset) else { return nil }
             return video.currentFrame(commandBuffer: commandBuffer, blurRadius: Int(s.blur),
                                       blur: blur, context: context, aspect: outputAspect)
+        case .browser:
+            let browser = activeBrowserBackground()
+            browser.load(urlString: s.browserURL, fps: s.browserFPS)
+            return browser.currentFrame(commandBuffer: commandBuffer, blurRadius: Int(s.blur),
+                                        blur: blur, aspect: outputAspect)
         default:
             return nil
         }
@@ -85,11 +99,17 @@ final class BackgroundEngine {
     // MARK: Loading (off the render thread)
 
     func preload(_ s: BackgroundSettings) {
-        guard let asset = s.assetName else { return }
         switch s.kind {
-        case .image: preloadImage(asset: asset, blurRadius: Int(s.blur))
-        case .video: _ = videoBackground(asset: asset)
-        default: break
+        case .image:
+            guard let asset = s.assetName else { return }
+            preloadImage(asset: asset, blurRadius: Int(s.blur))
+        case .video:
+            guard let asset = s.assetName else { return }
+            _ = videoBackground(asset: asset)
+        case .browser:
+            activeBrowserBackground().load(urlString: s.browserURL, fps: s.browserFPS)
+        default:
+            break
         }
     }
 
@@ -169,6 +189,12 @@ final class BackgroundEngine {
     func purge() {
         images.set([:])
         stopVideos()
+        browserBackground?.stop()
+        browserBackground = nil
+    }
+
+    func reloadBrowser() {
+        browserBackground?.reload()
     }
 }
 

@@ -52,6 +52,7 @@ targets:
       - sdk: Accelerate.framework
       - sdk: Security.framework
       - sdk: Network.framework
+      - sdk: WebKit.framework
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: $(DEKA_BUNDLE_ID)

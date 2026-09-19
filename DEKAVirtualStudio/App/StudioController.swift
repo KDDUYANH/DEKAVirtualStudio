@@ -331,6 +331,11 @@ final class StudioController {
         } catch { post(error.localizedDescription) }
     }
 
+    func reloadBrowserBackground() {
+        backgrounds?.reloadBrowser()
+        post("Reloading web background…")
+    }
+
     func importLogo(from url: URL) {
         do {
             let name = try projects.addAsset(projectID: project.id, from: url)

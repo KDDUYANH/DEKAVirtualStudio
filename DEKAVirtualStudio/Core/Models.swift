@@ -118,7 +118,7 @@ struct SegmentationSettings: Codable, Equatable {
 // MARK: - Background
 
 enum BackgroundKind: String, Codable, CaseIterable, Identifiable {
-    case none, solid, gradient, image, video
+    case none, solid, gradient, image, video, browser
     var id: String { rawValue }
 }
 
@@ -128,6 +128,8 @@ struct BackgroundSettings: Codable, Equatable {
     var colorB = RGBAColor(r: 0.16, g: 0.18, b: 0.30)
     var gradientAngle: Float = 90    // degrees
     var assetName: String? = nil     // file in project assets
+    var browserURL: String = "https://apple.com"
+    var browserFPS: Int = 30
     var scale: Float = 1
     var positionX: Float = 0
     var positionY: Float = 0
