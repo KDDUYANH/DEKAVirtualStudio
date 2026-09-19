@@ -1,0 +1,14 @@
+name = "deka-token"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+[vars]
+# Only these stream names can be published by DEKA operators (regex, anchored).
+ALLOWED_STREAM_PATTERN = "deka-.*"
+PUBLISH_TOKEN_TTL_SECONDS = "14400"   # 4 h: a show, not forever
+SESSION_TTL_SECONDS = "43200"         # 12 h operator session
+
+# Secrets — set with `wrangler secret put <NAME>`, never commit them:
+#   MILLICAST_API_SECRET   Dolby OptiView dashboard → Settings → Security → API Secret
+#   SESSION_SIGNING_KEY    random 32+ bytes:  openssl rand -base64 48
+#   OPERATORS              {"cam1":"<sha256 hex of operator key>"}

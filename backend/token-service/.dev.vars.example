@@ -1,0 +1,4 @@
+# Copy to .dev.vars for `wrangler dev` (git-ignored). NEVER commit real values.
+MILLICAST_API_SECRET=replace-me
+SESSION_SIGNING_KEY=replace-with-openssl-rand-base64-48
+OPERATORS={"cam1":"<sha256-hex-of-operator-key>"}
