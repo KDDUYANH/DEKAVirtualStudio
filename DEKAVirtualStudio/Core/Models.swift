@@ -162,7 +162,7 @@ struct LowerThird: Codable, Equatable {
 struct TickerSettings: Codable, Equatable {
     var enabled = false
     var text = "DEKA VIRTUAL STUDIO  •  LIVE FROM IPHONE  •"
-    var speed: Float = 0.08          // strip widths per second
+    var speed: Float = 0.08          // fraction of output width per second
 }
 
 enum CornerPosition: String, Codable, CaseIterable, Identifiable {
