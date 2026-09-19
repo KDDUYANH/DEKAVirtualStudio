@@ -121,6 +121,19 @@ final class TokenService {
         let _: Empty? = try? await request("v1/publish-token/\(id)", method: "DELETE", body: Optional<String>.none, bearer: s.token)
     }
 
+    /// GET /v1/health — reachability only, no credentials sent.
+    func healthCheck() async -> Bool {
+        guard let baseURL, baseURL.scheme?.lowercased() == "https" else { return false }
+        var req = URLRequest(url: baseURL.appendingPathComponent("v1/health"))
+        req.timeoutInterval = 5
+        guard let (_, response) = try? await session.data(for: req),
+              let http = response as? HTTPURLResponse else { return false }
+        return http.statusCode == 200
+    }
+
+    /// Proves the operator key still works (creates/refreshes the session, no publish token).
+    func verifySession() async throws { _ = try await validSession() }
+
     private func validSession() async throws -> SessionToken {
         if let cached = keychain.codable(SessionToken.self, for: Account.session), cached.isValid() { return cached }
         guard let creds = keychain.codable(OperatorCredentials.self, for: Account.operatorCreds) else {
