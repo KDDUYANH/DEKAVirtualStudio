@@ -34,9 +34,18 @@ protocol MasterFrameSink: AnyObject {
     func consume(master: MasterFrame)
 }
 
-/// Processed program audio, as CMSampleBuffers with host-clock timestamps.
+/// Processed program audio: 16-bit interleaved PCM with a host-clock timestamp
+/// (the same clock as camera frames, so audio and video stay in sync everywhere).
+struct AudioChunk {
+    let samples: [Int16]          // interleaved
+    let channels: Int
+    let sampleRate: Double
+    let frameCount: Int
+    let presentationTime: CMTime
+}
+
 protocol AudioSampleSink: AnyObject {
-    func consume(audio: CMSampleBuffer)
+    func consume(audio: AudioChunk)
 }
 
 /// Transport-agnostic publisher interface; MillicastEngine is the implementation.
