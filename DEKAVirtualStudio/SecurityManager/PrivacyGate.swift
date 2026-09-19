@@ -12,20 +12,20 @@
 import Foundation
 
 final class PrivacyGate {
-    private let open = Locked(false)
+    private let isOpen = Locked(false)
     private(set) var openedAt: Date?
 
     /// True only while the operator has an active GO LIVE.
-    var allowsUpload: Bool { open.get() }
+    var allowsUpload: Bool { isOpen.get() }
 
     func openForStreaming() {
-        open.set(true)
+        isOpen.set(true)
         openedAt = Date()
         Log.security.notice("Privacy gate OPEN (operator started streaming)")
     }
 
     func close() {
-        open.set(false)
+        isOpen.set(false)
         openedAt = nil
         Log.security.notice("Privacy gate CLOSED")
     }
