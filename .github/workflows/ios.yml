@@ -1,7 +1,6 @@
 # Builds DEKA Virtual Studio on a GitHub-hosted Mac — no local Mac needed.
-#  1. token-service tests (Node)
-#  2. unit + Metal pipeline tests on the iOS Simulator (Apple-silicon runner → real Metal)
-#  3. device build (unsigned) → DEKAVirtualStudio-unsigned.ipa artifact
+#  1. unit + Metal pipeline tests on the iOS Simulator (Apple-silicon runner → real Metal)
+#  2. device build (unsigned) → DEKAVirtualStudio-unsigned.ipa artifact
 # Signing/installing on an iPhone: see docs/BUILD.md.
 name: iOS
 
@@ -12,15 +11,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  backend:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 22 }
-      - run: npm test
-        working-directory: backend/token-service
-
   ios:
     runs-on: macos-15
     timeout-minutes: 60
@@ -38,7 +28,7 @@ jobs:
           brew install xcodegen
           xcodegen generate
 
-      - name: Resolve Swift packages (MillicastSDK)
+      - name: Resolve Swift packages (HaishinKit + SRTHaishinKit)
         run: xcodebuild -resolvePackageDependencies -project DEKAVirtualStudio.xcodeproj -scheme DEKAVirtualStudio
 
       - name: Unit + Metal tests (Simulator)

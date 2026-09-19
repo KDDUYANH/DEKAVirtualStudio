@@ -240,11 +240,53 @@ struct OutputSettings: Codable, Equatable {
     var minVideoBitrateKbps: Int = 1500
     var audioBitrateKbps: Int = 128
     var videoCodec: String = "h264"
-    var streamName: String = ""
+    var streamName: String = "cam1"
     var accountID: String = ""
     var region: String = "auto"
     var transition: TransitionKind = .fade
     var transitionDuration: Double = 0.5
+
+    // SRT Output (Publishing to MediaMTX / vMix)
+    var srtHost: String = "192.168.1.100"
+    var srtPort: Int = 9000
+    var srtStreamId: String = "publish:cam1"
+    var srtLatencyMs: Int = 200
+    var srtPassphrase: String = ""
+
+    // SRT Input (Return Program Feed from vMix / MediaMTX)
+    var srtReturnEnabled: Bool = false
+    var srtReturnHost: String = ""
+    var srtReturnPort: Int = 9000
+    var srtReturnStreamId: String = "read:program"
+
+    var srtPublishURLString: String {
+        let host = srtHost.trimmingCharacters(in: .whitespacesAndNewlines)
+        let streamId = srtStreamId.trimmingCharacters(in: .whitespacesAndNewlines)
+        var s = "srt://\(host.isEmpty ? "127.0.0.1" : host):\(srtPort)?mode=caller&latency=\(srtLatencyMs)"
+        if !streamId.isEmpty { s += "&streamid=\(streamId)" }
+        if !srtPassphrase.isEmpty { s += "&passphrase=\(srtPassphrase)" }
+        return s
+    }
+
+    var srtReturnURLString: String {
+        let targetHost = srtReturnHost.isEmpty ? srtHost : srtReturnHost
+        let host = targetHost.trimmingCharacters(in: .whitespacesAndNewlines)
+        let streamId = srtReturnStreamId.trimmingCharacters(in: .whitespacesAndNewlines)
+        var s = "srt://\(host.isEmpty ? "127.0.0.1" : host):\(srtReturnPort)?mode=caller&latency=\(srtLatencyMs)"
+        if !streamId.isEmpty { s += "&streamid=\(streamId)" }
+        if !srtPassphrase.isEmpty { s += "&passphrase=\(srtPassphrase)" }
+        return s
+    }
+
+    var srtPublishURL: String? {
+        let s = srtPublishURLString
+        return s.isEmpty ? nil : s
+    }
+
+    var srtReturnURL: String? {
+        guard srtReturnEnabled else { return nil }
+        return srtReturnURLString
+    }
 }
 
 enum LensKind: String, Codable, CaseIterable, Identifiable {

@@ -48,7 +48,7 @@ protocol AudioSampleSink: AnyObject {
     func consume(audio: AudioChunk)
 }
 
-/// Transport-agnostic publisher interface; MillicastEngine is the implementation.
+/// Transport-agnostic publisher interface; SRTEngine is the implementation.
 protocol StreamPublisher: AnyObject, MasterFrameSink, AudioSampleSink {
     var state: StreamState { get }
     func start(configuration: StreamConfiguration) async throws
@@ -89,4 +89,6 @@ struct StreamConfiguration: Equatable {
     var audioBitrateKbps: Int
     var videoCodec: String
     var streamName: String
+    var srtPublishURL: String = ""
+    var srtReturnURL: String? = nil
 }

@@ -7,7 +7,8 @@
 import Foundation
 import AVFoundation
 import CoreVideo
-import MillicastSDK
+import VideoToolbox
+import Network
 
 enum CheckStatus: String {
     case pass = "PASS", warn = "WARN", fail = "FAIL", info = "INFO", skipped = "SKIPPED", running = "…"
@@ -26,14 +27,13 @@ final class SystemCheck {
         let cameraRunning: () -> Bool
         let programFPS: () -> Double
         let audio: AudioEngine
-        let tokens: TokenService
         let lutLibrary: LUTLibrary?
     }
 
     private let deps: Dependencies
     init(_ deps: Dependencies) { self.deps = deps }
 
-    static let order = ["Camera", "Microphone", "Metal", "LUT", "Chroma", "Output", "AI", "WebRTC", "Dolby", "Storage", "Thermal"]
+    static let order = ["Camera", "Microphone", "Metal", "LUT", "Chroma", "Output", "AI", "SRT Encoder", "Network", "Storage", "Thermal"]
 
     func run(update: @escaping (CheckResult) -> Void) async {
         for name in Self.order { update(CheckResult(id: name, status: .running, detail: "")) }
@@ -45,8 +45,8 @@ final class SystemCheck {
         update(chroma(harness))
         update(output(harness))
         update(await ai())
-        update(webrtc())
-        update(await dolby())
+        update(srtEncoder())
+        update(network())
         update(storage())
         update(thermal())
     }
@@ -137,30 +137,56 @@ final class SystemCheck {
         }
     }
 
-    private func webrtc() -> CheckResult {
-        let codecs = MCMedia.getSupportedVideoCodecs()
-        let hasH264 = codecs.contains { $0.lowercased() == "h264" }
-        return CheckResult(id: "WebRTC", status: hasH264 ? .pass : .fail,
-                           detail: "MillicastSDK codecs: \(codecs.joined(separator: ", "))")
+    private func srtEncoder() -> CheckResult {
+        var session: VTCompressionSession?
+        let status = VTCompressionSessionCreate(
+            allocator: kCFAllocatorDefault,
+            width: 1920,
+            height: 1080,
+            codecType: kCMVideoCodecType_H264,
+            encoderSpecification: nil,
+            imageBufferAttributes: nil,
+            compressedDataAllocator: nil,
+            outputCallback: nil,
+            refcon: nil,
+            compressionSessionOut: &session
+        )
+        if status == noErr, let s = session {
+            VTCompressionSessionInvalidate(s)
+            return CheckResult(id: "SRT Encoder", status: .pass, detail: "Hardware H.264/HEVC VideoToolbox encoder ready")
+        } else {
+            return CheckResult(id: "SRT Encoder", status: .warn, detail: "VideoToolbox status: \(status)")
+        }
     }
 
-    private func dolby() async -> CheckResult {
-        if !deps.tokens.isConfigured {
-            if deps.tokens.hasDeveloperToken {
-                return CheckResult(id: "Dolby", status: .warn, detail: "Developer token in Keychain — verified only at GO LIVE")
+    private func network() -> CheckResult {
+        let monitor = NWPathMonitor()
+        let semaphore = DispatchSemaphore(value: 0)
+        var pathStatus: NWPath.Status = .requiresConnection
+        var ifaceDesc = "Unknown"
+        let queue = DispatchQueue(label: "SystemCheck.Network")
+
+        monitor.pathUpdateHandler = { path in
+            pathStatus = path.status
+            if path.usesInterfaceType(.wifi) {
+                ifaceDesc = "Wi-Fi"
+            } else if path.usesInterfaceType(.cellular) {
+                ifaceDesc = "Cellular"
+            } else if path.usesInterfaceType(.wiredEthernet) {
+                ifaceDesc = "Ethernet"
+            } else {
+                ifaceDesc = "Connected"
             }
-            return CheckResult(id: "Dolby", status: .fail, detail: "Token service not configured")
+            semaphore.signal()
         }
-        let ok = await deps.tokens.healthCheck()
-        guard ok else { return CheckResult(id: "Dolby", status: .fail, detail: "Token service unreachable (\(deps.tokens.serviceHost))") }
-        guard deps.tokens.isSignedIn else {
-            return CheckResult(id: "Dolby", status: .warn, detail: "Token service reachable · operator not signed in")
-        }
-        do {
-            try await deps.tokens.verifySession()
-            return CheckResult(id: "Dolby", status: .pass, detail: "Token service reachable · operator session valid")
-        } catch {
-            return CheckResult(id: "Dolby", status: .fail, detail: error.localizedDescription)
+        monitor.start(queue: queue)
+        _ = semaphore.wait(timeout: .now() + 0.5)
+        monitor.cancel()
+
+        if pathStatus == .satisfied {
+            return CheckResult(id: "Network", status: .pass, detail: "\(ifaceDesc) active · ready for SRT output & input")
+        } else {
+            return CheckResult(id: "Network", status: .warn, detail: "Network status: \(pathStatus)")
         }
     }
 

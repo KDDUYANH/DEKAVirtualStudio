@@ -11,6 +11,13 @@
 //
 
 import SwiftUI
+import HaishinKit
+
+struct SRTReturnMonitorView: UIViewRepresentable {
+    let view: MTHKView
+    func makeUIView(context: Context) -> MTHKView { view }
+    func updateUIView(_ uiView: MTHKView, context: Context) {}
+}
 
 enum PanelTab: String, CaseIterable, Identifiable {
     case camera = "CAM", color = "COLOR", lut = "LUT", key = "KEY", background = "BG",
@@ -43,6 +50,27 @@ struct ContentView: View {
                         .aspectRatio(16.0 / 9.0, contentMode: .fit)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .background(Color.black)
+                    if studio.project.output.srtReturnEnabled {
+                        SRTReturnMonitorView(view: studio.srtReturnView)
+                            .frame(width: 160, height: 90)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Theme.panelRaised, lineWidth: 1.5)
+                            )
+                            .overlay(alignment: .topLeading) {
+                                Text("RETURN (PiP)")
+                                    .font(.system(size: 8, weight: .bold))
+                                    .padding(.horizontal, 4)
+                                    .padding(.vertical, 2)
+                                    .background(Color.black.opacity(0.7))
+                                    .foregroundStyle(Theme.text)
+                                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                                    .padding(4)
+                            }
+                            .padding(12)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                    }
                     StatusBar()
                     if let banner = studio.banner {
                         Text(banner).font(.system(size: 12, weight: .semibold))

@@ -140,3 +140,32 @@ final class GraphicsMathTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(s, 0); XCTAssertLessThan(s, 1)
     }
 }
+
+final class SRTConfigurationTests: XCTestCase {
+    func testSRTPublishURLGeneration() {
+        var output = OutputSettings()
+        output.srtHost = "192.168.1.50"
+        output.srtPort = 9000
+        output.srtStreamId = "publish:cam1"
+        output.srtLatencyMs = 200
+        output.srtPassphrase = "secretPassphrase"
+
+        let url = output.srtPublishURLString
+        XCTAssertEqual(url, "srt://192.168.1.50:9000?mode=caller&latency=200&streamid=publish:cam1&passphrase=secretPassphrase")
+        XCTAssertEqual(output.srtPublishURL, url)
+    }
+
+    func testSRTReturnURLGeneration() {
+        var output = OutputSettings()
+        output.srtHost = "192.168.1.50"
+        output.srtReturnHost = "192.168.1.55"
+        output.srtReturnPort = 9000
+        output.srtReturnStreamId = "read:program"
+        output.srtLatencyMs = 150
+        output.srtReturnEnabled = true
+
+        let url = output.srtReturnURLString
+        XCTAssertEqual(url, "srt://192.168.1.55:9000?mode=caller&latency=150&streamid=read:program")
+        XCTAssertEqual(output.srtReturnURL, url)
+    }
+}

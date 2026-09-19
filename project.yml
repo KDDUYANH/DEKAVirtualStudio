@@ -13,9 +13,9 @@ configFiles:
   Release: Config/App.xcconfig
 
 packages:
-  MillicastSDK:
-    url: https://github.com/millicast/millicast-sdk-swift-package
-    exactVersion: 2.6.0
+  HaishinKit:
+    url: https://github.com/shogo4405/HaishinKit.swift.git
+    exactVersion: 2.2.5
 
 settings:
   base:
@@ -39,17 +39,19 @@ targets:
         excludes:
           - "**/.DS_Store"
     dependencies:
-      - package: MillicastSDK
+      - package: HaishinKit
+        product: HaishinKit
+      - package: HaishinKit
+        product: SRTHaishinKit
       - sdk: Metal.framework
       - sdk: MetalKit.framework
       - sdk: AVFoundation.framework
       - sdk: CoreVideo.framework
       - sdk: CoreMedia.framework
-      - sdk: Vision.framework
-      - sdk: CoreML.framework
       - sdk: VideoToolbox.framework
       - sdk: Accelerate.framework
       - sdk: Security.framework
+      - sdk: Network.framework
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: $(DEKA_BUNDLE_ID)
@@ -87,7 +89,7 @@ targets:
         NSMicrophoneUsageDescription: "DEKA Virtual Studio uses the microphone for program audio. Audio stays on this iPhone until you press GO LIVE."
         NSPhotoLibraryUsageDescription: "Choose images or videos to use as virtual backgrounds and logos."
         NSPhotoLibraryAddUsageDescription: "Save local recordings to your photo library."
-        NSLocalNetworkUsageDescription: "Used only to reach your token service when it runs on your local network during development."
+        NSLocalNetworkUsageDescription: "Used for ultra-low-latency SRT video streaming and return monitoring over your local Wi-Fi / LAN."
         DEKATokenServiceURL: $(DEKA_TOKEN_SERVICE_URL)
         ITSAppUsesNonExemptEncryption: false
 

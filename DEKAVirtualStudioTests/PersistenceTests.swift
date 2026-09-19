@@ -17,11 +17,21 @@ final class ProjectManagerTests: XCTestCase {
         p.scenes[0].color.exposure = 0.7
         p.scenes[1].keyMode = .greenScreen
         p.output.streamName = "deka-test"
+        p.output.srtHost = "10.0.0.1"
+        p.output.srtPort = 9000
+        p.output.srtStreamId = "publish:test"
+        p.output.srtReturnEnabled = true
+        p.output.srtReturnStreamId = "read:test"
         try pm.save(p)
         let loaded = try pm.load(id: p.id)
         XCTAssertEqual(loaded.scenes[0].color.exposure, 0.7)
         XCTAssertEqual(loaded.scenes[1].keyMode, .greenScreen)
         XCTAssertEqual(loaded.output.streamName, "deka-test")
+        XCTAssertEqual(loaded.output.srtHost, "10.0.0.1")
+        XCTAssertEqual(loaded.output.srtPort, 9000)
+        XCTAssertEqual(loaded.output.srtStreamId, "publish:test")
+        XCTAssertEqual(loaded.output.srtReturnEnabled, true)
+        XCTAssertEqual(loaded.output.srtReturnStreamId, "read:test")
         XCTAssertEqual(pm.list().count, 1)
     }
 

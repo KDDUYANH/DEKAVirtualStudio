@@ -114,11 +114,6 @@ struct AudioPanel: View {
 
 struct OutputPanel: View {
     @Environment(StudioController.self) private var studio
-    @State private var operatorID = ""
-    @State private var operatorKey = ""
-    @State private var devToken = ""
-    @State private var devStream = ""
-    @State private var signingIn = false
 
     var body: some View {
         let s = studio.telemetry.stream
@@ -134,45 +129,41 @@ struct OutputPanel: View {
                                            set: { v in studio.outputBinding(\.videoBitrateKbps).wrappedValue = Int(v) }),
                             range: 1000...12000, neutral: 4000, format: "%.0f")
             }
-            PanelSection(title: "DOLBY MILLICAST") {
-                TextField("Stream name", text: studio.outputBinding(\.streamName))
-                    .textFieldStyle(.roundedBorder).textInputAutocapitalization(.never).autocorrectionDisabled()
-                Text("Token service: \(studio.tokens.serviceHost)").font(Theme.label).foregroundStyle(Theme.dim)
-                if studio.tokens.isSignedIn {
-                    HStack {
-                        Text("OPERATOR SIGNED IN").font(Theme.label).foregroundStyle(Theme.live)
-                        Spacer()
-                        Button("SIGN OUT") { studio.tokens.signOut() }.font(Theme.label)
-                    }
-                } else if studio.tokens.isConfigured {
-                    TextField("Operator ID", text: $operatorID).textFieldStyle(.roundedBorder).textInputAutocapitalization(.never)
-                    SecureField("Operator key", text: $operatorKey).textFieldStyle(.roundedBorder)
-                    Button(signingIn ? "SIGNING IN…" : "SIGN IN") {
-                        signingIn = true
-                        Task {
-                            do { try await studio.tokens.signIn(OperatorCredentials(operatorID: operatorID, operatorKey: operatorKey)); operatorKey = ""; studio.post("Signed in") }
-                            catch { studio.post(error.localizedDescription) }
-                            signingIn = false
-                        }
-                    }.font(Theme.label).disabled(operatorID.isEmpty || operatorKey.isEmpty)
+
+            PanelSection(title: "SRT OUTPUT (BROADCAST)") {
+                HStack(spacing: 6) {
+                    TextField("Server Host / IP", text: studio.outputBinding(\.srtHost))
+                        .textFieldStyle(.roundedBorder).textInputAutocapitalization(.never).autocorrectionDisabled()
+                    TextField("Port", value: studio.outputBinding(\.srtPort), format: .number)
+                        .textFieldStyle(.roundedBorder).frame(width: 65)
                 }
-                DisclosureGroup {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("For testing without a backend only. Stored in Keychain on this iPhone; used when no token service is configured.")
-                            .font(.system(size: 10)).foregroundStyle(Theme.dim)
-                        TextField("Stream name", text: $devStream).textFieldStyle(.roundedBorder).textInputAutocapitalization(.never)
-                        SecureField("Publishing token", text: $devToken).textFieldStyle(.roundedBorder)
-                        HStack {
-                            Button("SAVE") {
-                                do { try studio.tokens.setDeveloperToken(devToken, streamName: devStream); devToken = ""; studio.post("Developer token saved to Keychain") }
-                                catch { studio.post(error.localizedDescription) }
-                            }.disabled(devToken.isEmpty || devStream.isEmpty)
-                            Spacer()
-                            if studio.tokens.hasDeveloperToken { Button("CLEAR", role: .destructive) { studio.tokens.clearDeveloperToken() } }
-                        }.font(Theme.label)
-                    }
-                } label: { Text("DEVELOPER TOKEN").font(Theme.label).foregroundStyle(Theme.warn) }
+                TextField("Publish Stream ID (e.g. publish:cam1)", text: studio.outputBinding(\.srtStreamId))
+                    .textFieldStyle(.roundedBorder).textInputAutocapitalization(.never).autocorrectionDisabled()
+                ValueSlider(label: "LATENCY",
+                            value: Binding(get: { Float(studio.project.output.srtLatencyMs) },
+                                           set: { v in studio.outputBinding(\.srtLatencyMs).wrappedValue = Int(v) }),
+                            range: 50...1000, neutral: 200, format: "%.0f ms")
+                SecureField("Passphrase (optional)", text: studio.outputBinding(\.srtPassphrase))
+                    .textFieldStyle(.roundedBorder)
+                Text(studio.project.output.srtPublishURLString)
+                    .font(.system(size: 9, design: .monospaced))
+                    .foregroundStyle(Theme.dim)
+                    .lineLimit(2)
             }
+
+            PanelSection(title: "SRT INPUT (RETURN FEED / PiP)") {
+                Toggle("RETURN MONITOR (PiP)", isOn: studio.outputBinding(\.srtReturnEnabled))
+                    .font(Theme.label)
+                if studio.project.output.srtReturnEnabled {
+                    TextField("Return Stream ID (e.g. read:program)", text: studio.outputBinding(\.srtReturnStreamId))
+                        .textFieldStyle(.roundedBorder).textInputAutocapitalization(.never).autocorrectionDisabled()
+                    Text(studio.project.output.srtReturnURLString)
+                        .font(.system(size: 9, design: .monospaced))
+                        .foregroundStyle(Theme.dim)
+                        .lineLimit(2)
+                }
+            }
+
             PanelSection(title: "TRANSITION") {
                 Pills(options: TransitionKind.allCases, selection: studio.outputBinding(\.transition)) { $0.rawValue.uppercased() }
                 ValueSlider(label: "FADE",
@@ -180,6 +171,7 @@ struct OutputPanel: View {
                                            set: { v in studio.outputBinding(\.transitionDuration).wrappedValue = Double(v) }),
                             range: 0.1...2, neutral: 0.5, format: "%.1f s")
             }
+
             PanelSection(title: "RECORDING") {
                 Pills(options: RecordingMode.allCases, selection: Binding(get: { studio.recordingMode }, set: { studio.recordingMode = $0 })) { $0.rawValue }
                 let r = studio.telemetry.recording
@@ -187,13 +179,13 @@ struct OutputPanel: View {
                     .font(Theme.label).foregroundStyle(Theme.dim)
                 if let w = r.warning { Text(w).font(Theme.label).foregroundStyle(Theme.warn) }
             }
+
             if studio.streamState.isOnAir {
-                PanelSection(title: "WEBRTC") {
+                PanelSection(title: "SRT TELEMETRY") {
                     Group {
-                        Text(String(format: "%.2f Mbps video · %.0f kbps audio", s.videoBitrateKbps / 1000, s.audioBitrateKbps))
-                        Text(String(format: "target %.2f Mbps · BWE %.2f Mbps", s.targetBitrateKbps / 1000, s.availableOutgoingKbps / 1000))
-                        Text("\(s.frameWidth)×\(s.frameHeight) @ \(String(format: "%.0f", s.framesPerSecond)) · \(s.encoder)")
-                        Text("limit: \(s.qualityLimitation) · pc: \(s.connectionState)")
+                        Text(String(format: "%.2f Mbps send · %.0f ms RTT", s.videoBitrateKbps / 1000, s.rttMs))
+                        Text(String(format: "loss: %.2f%% · bandwidth: %.2f Mbps", s.packetLossPercent, s.availableOutgoingKbps / 1000))
+                        Text("status: \(s.connectionState) · latency: \(studio.project.output.srtLatencyMs) ms")
                     }
                     .font(Theme.label).foregroundStyle(Theme.dim)
                 }

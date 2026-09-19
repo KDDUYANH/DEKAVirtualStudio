@@ -7,6 +7,7 @@
 import SwiftUI
 import AVFoundation
 import Observation
+import HaishinKit
 
 @MainActor
 @Observable
@@ -27,7 +28,7 @@ final class StudioController {
     @ObservationIgnored private var backgrounds: BackgroundEngine?
     @ObservationIgnored private var graphics: GraphicsEngine?
     @ObservationIgnored private var segmentation: SegmentationEngine?
-    @ObservationIgnored private(set) var publisher: MillicastEngine
+    @ObservationIgnored private(set) var publisher: SRTEngine
     @ObservationIgnored private var telemetryTimer: Timer?
     @ObservationIgnored private var autosaveTask: Task<Void, Never>?
 
@@ -54,6 +55,7 @@ final class StudioController {
 
     var activeScene: SceneModel { scenes.first { $0.id == activeSceneID } ?? scenes.first ?? SceneModel(name: "Scene") }
     var currentMode: CaptureMode { CaptureMode(resolution: project.output.resolution, fps: project.output.fps) }
+    var srtReturnView: MTHKView { publisher.returnView }
 
     init() {
         let pm = ProjectManager()
@@ -64,7 +66,7 @@ final class StudioController {
         // Every stored property is initialised before `self` is used.
         self.gate = gate
         self.tokens = tokens
-        self.publisher = MillicastEngine(gate: gate, tokens: tokens)
+        self.publisher = SRTEngine(gate: gate)
         self.project = initial
         self.scenesEngine = engine
         self.activeSceneID = engine.activeSceneID
@@ -372,13 +374,19 @@ final class StudioController {
 
     func goLive() async {
         guard !streamState.isOnAir, let compositor else { return }
-        let name = project.output.streamName.trimmingCharacters(in: .whitespaces)
-        guard !name.isEmpty || tokens.hasDeveloperToken else { post("Set a stream name in OUTPUT first."); return }
+        guard let publishURL = project.output.srtPublishURL else {
+            post("Invalid SRT host or port. Configure SRT Output in OUTPUT panel.")
+            return
+        }
+        let returnURL = project.output.srtReturnURL
         let cfg = StreamConfiguration(resolution: project.output.resolution, fps: project.output.fps,
                                       videoBitrateKbps: project.output.videoBitrateKbps,
                                       minVideoBitrateKbps: project.output.minVideoBitrateKbps,
                                       audioBitrateKbps: project.output.audioBitrateKbps,
-                                      videoCodec: project.output.videoCodec, streamName: name)
+                                      videoCodec: project.output.videoCodec,
+                                      streamName: project.output.srtPublishStreamId,
+                                      srtPublishURL: publishURL,
+                                      srtReturnURL: returnURL)
         // Open the gate and attach the publisher ONLY now — the explicit operator action.
         gate.openForStreaming()
         compositor.addSink(publisher)
@@ -587,7 +595,7 @@ final class StudioController {
         let deps = SystemCheck.Dependencies(context: metal,
                                             cameraRunning: { [camera] in camera.isRunning },
                                             programFPS: { comp?.stats.fps ?? 0 },
-                                            audio: audio, tokens: tokens, lutLibrary: lutLibrary)
+                                            audio: audio, lutLibrary: lutLibrary)
         await SystemCheck(deps).run { [weak self] r in
             Task { @MainActor in
                 guard let self else { return }
