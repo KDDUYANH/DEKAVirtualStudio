@@ -1,0 +1,85 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: deka-postgres
+    environment:
+      POSTGRES_USER: deka_user
+      POSTGRES_PASSWORD: dev-password-change
+      POSTGRES_DB: deka_live
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U deka_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Server
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: deka-backend
+    environment:
+      PORT: 3000
+      NODE_ENV: development
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: deka_live
+      DB_USER: deka_user
+      DB_PASSWORD: dev-password-change
+      JWT_SECRET: dev-secret-change-in-prod
+      MEDIAMTX_URL: http://localhost:9998
+      VMIX_HOST: localhost
+      VMIX_PORT: 8099
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./backend/src:/app/src
+    command: npm run dev
+
+  # Frontend Server
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: deka-frontend
+    environment:
+      REACT_APP_API_URL: http://localhost:3000
+      REACT_APP_WS_URL: ws://localhost:3000
+    ports:
+      - "3001:3000"
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend/src:/app/src
+
+  # MediaMTX (Optional - for testing)
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    container_name: deka-mediamtx
+    ports:
+      - "9000:9000/udp"
+      - "8555:8555/tcp"
+      - "8188:8188/tcp"
+      - "9998:9998/tcp"
+    volumes:
+      - ./mediamtx.yml:/mediamtx.yml:ro
+      - ./logs:/logs
+    environment:
+      MEDIAMTX_LOGLEVEL: info
+
+volumes:
+  postgres_data:
+
+networks:
+  default:
+    name: deka-network

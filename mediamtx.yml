@@ -1,0 +1,34 @@
+# MediaMTX Configuration for DEKA LIVE DASHBOARD
+
+logLevel: info
+logDestinations: [stdout]
+
+# Prometheus metrics for stream quality monitoring
+metrics: yes
+metricsAddress: :9998
+
+# API configuration
+api: yes
+apiAddress: :9997
+
+# Protocols
+rtmp: yes
+rtmpAddress: :1935
+
+rtsp: yes
+rtspAddress: :8554
+protocols: [tcp, udp]
+
+hls: yes
+hlsAddress: :8888
+
+webrtc: yes
+webrtcAddress: :8889
+
+srt: yes
+srtAddress: :9000
+
+paths:
+  all:
+    readUser: ""
+    readPass: ""
