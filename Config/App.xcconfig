@@ -1,0 +1,9 @@
+// Shared, non-secret build settings. NEVER put API secrets or publish tokens here.
+// Per-developer values live in Config/Local.xcconfig (git-ignored). Copy Local.example.xcconfig.
+
+DEKA_BUNDLE_ID = vn.kdproductions.dekavirtualstudio
+DEKA_DEVELOPMENT_TEAM =
+// Token service base URL (public endpoint, not a secret). `$()` stops xcconfig treating // as a comment.
+DEKA_TOKEN_SERVICE_URL = https:/$()/token.example.com
+
+#include? "Local.xcconfig"

@@ -1,0 +1,19 @@
+# Xcode
+*.xcodeproj/
+!*.xcodeproj/project.xcworkspace/xcshareddata/
+xcuserdata/
+DerivedData/
+build/
+*.ipa
+*.dSYM.zip
+*.xcresult
+
+# Local config & secrets — never commit
+Config/Local.xcconfig
+.env
+.env.*
+!.env.example
+backend/token-service/.dev.vars
+backend/token-service/node_modules/
+
+.DS_Store

@@ -1,0 +1,123 @@
+# XcodeGen spec — source of truth for DEKAVirtualStudio.xcodeproj
+# Generate:  brew install xcodegen && xcodegen generate
+name: DEKAVirtualStudio
+options:
+  bundleIdPrefix: vn.kdproductions
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+  developmentLanguage: en
+
+configFiles:
+  Debug: Config/App.xcconfig
+  Release: Config/App.xcconfig
+
+packages:
+  MillicastSDK:
+    url: https://github.com/millicast/millicast-sdk-swift-package
+    exactVersion: 2.6.0
+
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    SWIFT_STRICT_CONCURRENCY: minimal
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    TARGETED_DEVICE_FAMILY: "1"
+    ENABLE_BITCODE: NO
+    DEAD_CODE_STRIPPING: YES
+    MTL_FAST_MATH: YES
+    MTL_ENABLE_DEBUG_INFO[config=Debug]: INCLUDE_SOURCE
+    GCC_WARN_UNUSED_VARIABLE: YES
+    CLANG_WARN_DOCUMENTATION_COMMENTS: YES
+
+targets:
+  DEKAVirtualStudio:
+    type: application
+    platform: iOS
+    sources:
+      - path: DEKAVirtualStudio
+        excludes:
+          - "**/.DS_Store"
+    dependencies:
+      - package: MillicastSDK
+      - sdk: Metal.framework
+      - sdk: MetalKit.framework
+      - sdk: AVFoundation.framework
+      - sdk: CoreVideo.framework
+      - sdk: CoreMedia.framework
+      - sdk: Vision.framework
+      - sdk: CoreML.framework
+      - sdk: VideoToolbox.framework
+      - sdk: Accelerate.framework
+      - sdk: Security.framework
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(DEKA_BUNDLE_ID)
+        PRODUCT_NAME: DEKA Virtual Studio
+        MARKETING_VERSION: "0.9.0"
+        CURRENT_PROJECT_VERSION: "1"
+        SWIFT_OBJC_BRIDGING_HEADER: DEKAVirtualStudio/App/DEKAVirtualStudio-Bridging-Header.h
+        MTL_HEADER_SEARCH_PATHS: $(SRCROOT)/DEKAVirtualStudio/MetalEngine/Shaders
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: $(DEKA_DEVELOPMENT_TEAM)
+        INFOPLIST_FILE: DEKAVirtualStudio/App/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+    info:
+      path: DEKAVirtualStudio/App/Info.plist
+      properties:
+        CFBundleDisplayName: DEKA Studio
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        LSRequiresIPhoneOS: true
+        UILaunchScreen: {}
+        UIRequiresFullScreen: true
+        UIStatusBarHidden: true
+        UIViewControllerBasedStatusBarAppearance: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationLandscapeRight
+          - UIInterfaceOrientationLandscapeLeft
+        UIRequiredDeviceCapabilities:
+          - metal
+          - arm64
+        UIFileSharingEnabled: true
+        LSSupportsOpeningDocumentsInPlace: true
+        NSCameraUsageDescription: "DEKA Virtual Studio uses the camera to produce your live program. Video stays on this iPhone until you press GO LIVE."
+        NSMicrophoneUsageDescription: "DEKA Virtual Studio uses the microphone for program audio. Audio stays on this iPhone until you press GO LIVE."
+        NSPhotoLibraryUsageDescription: "Choose images or videos to use as virtual backgrounds and logos."
+        NSPhotoLibraryAddUsageDescription: "Save local recordings to your photo library."
+        NSLocalNetworkUsageDescription: "Used only to reach your token service when it runs on your local network during development."
+        DEKATokenServiceURL: $(DEKA_TOKEN_SERVICE_URL)
+        ITSAppUsesNonExemptEncryption: false
+
+  DEKAVirtualStudioTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: DEKAVirtualStudioTests
+    dependencies:
+      - target: DEKAVirtualStudio
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(DEKA_BUNDLE_ID).tests
+        TEST_HOST: $(BUILT_PRODUCTS_DIR)/DEKA Virtual Studio.app/DEKA Virtual Studio
+        BUNDLE_LOADER: $(TEST_HOST)
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+        DEVELOPMENT_TEAM: $(DEKA_DEVELOPMENT_TEAM)
+
+schemes:
+  DEKAVirtualStudio:
+    build:
+      targets:
+        DEKAVirtualStudio: all
+        DEKAVirtualStudioTests: [test]
+    test:
+      config: Debug
+      gatherCoverageData: true
+      targets:
+        - DEKAVirtualStudioTests
+    run:
+      config: Debug
+    archive:
+      config: Release

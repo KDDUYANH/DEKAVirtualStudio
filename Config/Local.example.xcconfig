@@ -1,0 +1,11 @@
+// Copy to Config/Local.xcconfig (git-ignored) and fill in.
+// This file only contains identifiers, never secrets.
+
+// Your Apple Developer Team ID (Xcode > Settings > Accounts). Required for device builds.
+DEKA_DEVELOPMENT_TEAM = ABCDE12345
+
+// Must be unique per Apple account when using a free Personal Team.
+DEKA_BUNDLE_ID = vn.yourname.dekavirtualstudio
+
+// Where you deployed backend/token-service (Cloudflare Worker URL).
+DEKA_TOKEN_SERVICE_URL = https:/$()/deka-token.yourname.workers.dev
