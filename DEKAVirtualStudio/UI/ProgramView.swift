@@ -15,6 +15,4 @@ struct ProgramView: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: PreviewMetalView, context: Context) {}
-
-    static func dismantleUIView(_ uiView: PreviewMetalView, coordinator: ()) {}
 }

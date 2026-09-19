@@ -256,7 +256,7 @@ final class GraphicsEngine {
     static func countdownString(remaining: TimeInterval) -> String {
         let s = max(0, Int(remaining.rounded(.up)))
         let h = s / 3600, m = (s % 3600) / 60, sec = s % 60
-        return h > 0 ? String(format: "%d:%02d:%02d", h, m, sec) : String(format: "%02d:%02d", m, sec)
+        return h > 0 ? String(format: "%ld:%02ld:%02ld", h, m, sec) : String(format: "%02ld:%02ld", m, sec)
     }
 
     /// Ticker scroll (normalised strip offset) for a given time. Pure function, unit tested.

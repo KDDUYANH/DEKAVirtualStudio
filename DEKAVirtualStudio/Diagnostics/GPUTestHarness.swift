@@ -176,7 +176,7 @@ final class GPUTestHarness {
             let cpu = lut.sample(noLUT.rgb)
             worst = max(worst, simd_reduce_max(simd_abs(gpu.rgb - cpu)))
         }
-        return (worst < 0.01, String(format: "%d³, GPU vs CPU max error %.4f", lut.size, worst))
+        return (worst < 0.01, String(format: "%ld³, GPU vs CPU max error %.4f", lut.size, worst))
     }
 
     /// Keyer: key colour → matte ≈ 0, skin/red → matte ≈ 1.

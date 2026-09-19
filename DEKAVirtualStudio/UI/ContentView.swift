@@ -137,7 +137,7 @@ struct StatusBar: View {
 }
 
 func timeString(_ t: TimeInterval) -> String {
-    let s = Int(t); return String(format: "%02d:%02d:%02d", s / 3600, (s % 3600) / 60, s % 60)
+    let s = Int(t); return String(format: "%02ld:%02ld:%02ld", s / 3600, (s % 3600) / 60, s % 60)
 }
 
 struct SceneBar: View {
@@ -150,7 +150,7 @@ struct SceneBar: View {
                         let active = scene.id == studio.activeSceneID
                         Button { studio.take(scene.id) } label: {
                             VStack(alignment: .leading, spacing: 1) {
-                                Text(String(format: "SCENE %02d", i + 1)).font(.system(size: 8, weight: .bold)).foregroundStyle(active ? .black.opacity(0.6) : Theme.dim)
+                                Text(String(format: "SCENE %02ld", i + 1)).font(.system(size: 8, weight: .bold)).foregroundStyle(active ? .black.opacity(0.6) : Theme.dim)
                                 Text(scene.name).font(.system(size: 11, weight: .semibold)).lineLimit(1)
                             }
                             .padding(.horizontal, 10).padding(.vertical, 6)

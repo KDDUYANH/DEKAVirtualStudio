@@ -235,7 +235,7 @@ struct KeyPanel: View {
                     ValueSlider(label: "EDGE", value: studio.sceneBinding(\.chroma.edge), range: -1...1)
                     ValueSlider(label: "FEATHER", value: studio.sceneBinding(\.chroma.feather), range: 0...20, neutral: 2, format: "%.0f px")
                     let ai = studio.telemetry.ai
-                    Text("\(ai.backend)\n\(String(format: "%.0f fps · %.0f ms · target %d", ai.effectiveFPS, ai.inferenceMs, ai.targetFPS))")
+                    Text("\(ai.backend)\n\(String(format: "%.0f fps · %.0f ms · target %ld", ai.effectiveFPS, ai.inferenceMs, ai.targetFPS))")
                         .font(Theme.label).foregroundStyle(Theme.dim)
                     if let e = ai.lastError { Text(e).font(Theme.label).foregroundStyle(Theme.tally) }
                 }

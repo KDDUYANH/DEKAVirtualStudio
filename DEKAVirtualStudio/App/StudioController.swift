@@ -13,13 +13,13 @@ import Observation
 final class StudioController {
 
     // MARK: Engines (not observed)
-    @ObservationIgnored let camera = CameraManager()
-    @ObservationIgnored let audio = AudioEngine()
-    @ObservationIgnored let gate = PrivacyGate()
-    @ObservationIgnored let tokens = TokenService()
-    @ObservationIgnored let recorder = RecordingEngine()
-    @ObservationIgnored let projects = ProjectManager()
-    @ObservationIgnored let thermal = ThermalManager()
+    let camera = CameraManager()
+    let audio = AudioEngine()
+    let gate: PrivacyGate
+    let tokens: TokenService
+    let recorder = RecordingEngine()
+    let projects = ProjectManager()
+    let thermal = ThermalManager()
     @ObservationIgnored private(set) var metal: MetalContext?
     @ObservationIgnored private(set) var compositor: MasterCompositor?
     @ObservationIgnored private(set) var scenesEngine: SceneEngine
@@ -58,11 +58,17 @@ final class StudioController {
     init() {
         let pm = ProjectManager()
         let initial = pm.list().first.flatMap { try? pm.load(id: $0.id) } ?? (try? pm.create(name: "Studio A")) ?? StudioProject(name: "Studio A")
-        project = initial
-        scenesEngine = SceneEngine(scenes: initial.scenes, activeID: initial.activeSceneID)
-        activeSceneID = scenesEngine.activeSceneID
-        publisher = MillicastEngine(gate: gate, tokens: tokens)
-        scenes = scenesEngine.scenes
+        let engine = SceneEngine(scenes: initial.scenes, activeID: initial.activeSceneID)
+        let gate = PrivacyGate()
+        let tokens = TokenService()
+        // Every stored property is initialised before `self` is used.
+        self.gate = gate
+        self.tokens = tokens
+        self.publisher = MillicastEngine(gate: gate, tokens: tokens)
+        self.project = initial
+        self.scenesEngine = engine
+        self.activeSceneID = engine.activeSceneID
+        self.scenes = engine.scenes
         buildPipeline()
     }
 

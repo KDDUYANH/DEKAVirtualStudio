@@ -122,7 +122,8 @@ final class SystemCheck {
         // Runs the real Vision request on a synthetic frame. This proves the model loads and
         // executes on this device and measures its latency; mask QUALITY needs a person in frame.
         do {
-            let seg: PersonSegmenter = (try? CoreMLPersonSegmenter()) ?? VisionPersonSegmenter(quality: .balanced)
+            let seg: PersonSegmenter
+            if let coreML = try? CoreMLPersonSegmenter() { seg = coreML } else { seg = VisionPersonSegmenter(quality: .balanced) }
             guard let ctx = deps.context else { return CheckResult(id: "AI", status: .skipped, detail: "Metal unavailable") }
             let pb = try GPUTestHarness(context: ctx).makeCameraBuffer(rgb: SIMD3(0.4, 0.4, 0.4))
             let t0 = hostTimeSeconds()
@@ -130,7 +131,7 @@ final class SystemCheck {
             let ms = (hostTimeSeconds() - t0) * 1000
             let w = CVPixelBufferGetWidth(mask), hgt = CVPixelBufferGetHeight(mask)
             return CheckResult(id: "AI", status: .pass,
-                               detail: String(format: "%@ runs · %d×%d mask · %.0f ms (first run includes model load)", seg.name, w, hgt, ms))
+                               detail: String(format: "%@ runs · %ld×%ld mask · %.0f ms (first run includes model load)", seg.name, w, hgt, ms))
         } catch {
             return CheckResult(id: "AI", status: .fail, detail: error.localizedDescription)
         }
