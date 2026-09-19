@@ -54,7 +54,8 @@ final class RecordingEngine: MasterFrameSink, AudioSampleSink {
 
     // MARK: Control
 
-    func start(mode: RecordingMode, size: CGSize, fps: Int, cameraRotated180: Bool, codec: AVVideoCodecType = .hevc) throws {
+    func start(mode: RecordingMode, size: CGSize, fps: Int, cameraRotated180: Bool, audioChannels: Int?,
+               codec: AVVideoCodecType = .hevc) throws {
         let free = SystemMetrics.freeStorageBytes()
         guard free > Self.lowStorageStopBytes else {
             throw NSError(domain: "DEKA.Recording", code: 1, userInfo: [NSLocalizedDescriptionKey:
@@ -99,15 +100,15 @@ final class RecordingEngine: MasterFrameSink, AudioSampleSink {
             self.mode = mode
             self.url = url
             self.pendingAudioSettings = nil
+            if let ch = audioChannels { self.addAudioInputIfNeeded(channels: ch, rate: AudioEngine.targetSampleRate) }
         }
         statusBox.set(RecordingStatus(isRecording: true, mode: mode, duration: 0, fileBytes: 0,
                                       freeBytes: free, lastFile: nil, warning: nil))
         Log.record.info("Recording \(mode.rawValue, privacy: .public) → \(url.lastPathComponent, privacy: .public)")
     }
 
-    /// Audio input needs the real channel count, so it is added lazily on the first chunk — but it
-    /// must exist before startWriting(); we therefore start writing on the first VIDEO frame and
-    /// add audio immediately before if a chunk arrived already.
+    /// Audio input must exist before startWriting(). It is added at start() from the audio
+    /// engine's known format, or (if the mic started later) before the first video frame.
     private func addAudioInputIfNeeded(channels: Int, rate: Double) {
         guard let writer, audioInput == nil, writer.status == .unknown else { return }
         var layout = AudioChannelLayout()
@@ -152,7 +153,7 @@ final class RecordingEngine: MasterFrameSink, AudioSampleSink {
         let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
         guard status == .authorized || status == .limited else { return }
         try? await PHPhotoLibrary.shared().performChanges {
-            PHAssetCreationRequest.creationRequestForAssetFromVideo(atFileURL: url)
+            _ = PHAssetCreationRequest.creationRequestForAssetFromVideo(atFileURL: url)
         }
     }
 

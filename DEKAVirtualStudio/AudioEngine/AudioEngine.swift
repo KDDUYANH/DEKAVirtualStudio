@@ -59,6 +59,8 @@ final class AudioEngine {
     private(set) var isRunning = false
 
     var levels: AudioLevels { levelsBox.get() }
+    /// Channel count of the program audio delivered to sinks (nil until the engine runs).
+    var outputChannels: Int? { outputFormat.map { Int($0.channelCount) } }
     var onRouteChanged: (() -> Void)?
 
     static let targetSampleRate: Double = 48_000
