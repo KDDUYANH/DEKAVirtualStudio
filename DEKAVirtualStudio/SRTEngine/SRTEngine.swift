@@ -100,7 +100,7 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
         // Configure Video Encoding (Hardware VideoToolbox)
         let isHEVC = cfg.videoCodec.lowercased() == "hevc"
         let profile = isHEVC ? (kVTProfileLevel_HEVC_Main_AutoLevel as String) : (kVTProfileLevel_H264_High_AutoLevel as String)
-        var videoSettings = VideoCodecSettings(
+        let videoSettings = VideoCodecSettings(
             videoSize: cfg.resolution.size,
             bitRate: cfg.videoBitrateKbps * 1000,
             profileLevel: profile,
@@ -114,7 +114,7 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
         try? await stream.setVideoSettings(videoSettings)
 
         // Configure Audio Encoding (AAC 128kbps)
-        var audioSettings = AudioCodecSettings(
+        let audioSettings = AudioCodecSettings(
             bitRate: cfg.audioBitrateKbps * 1000,
             format: .aac
         )
