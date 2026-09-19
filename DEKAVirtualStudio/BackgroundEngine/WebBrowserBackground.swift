@@ -85,7 +85,7 @@ final class WebBrowserBackground: NSObject, WKNavigationDelegate, @unchecked Sen
             guard let cgImage = image.cgImage else { return }
 
             let loader = MTKTextureLoader(device: context.device)
-            let texture = try? loader.newTexture(cgImage: cgImage, options: [
+            let texture = try? await loader.newTexture(cgImage: cgImage, options: [
                 .SRGB: false,
                 .generateMipmaps: false
             ])
