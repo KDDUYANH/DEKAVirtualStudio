@@ -102,8 +102,10 @@ final class MillicastEngine: StreamPublisher {
         self.publisher = publisher
         observe(publisher)
 
-        let vSource = MCCoreVideoSourceBuilder().build()
-        let aSource = MCCustomAudioSourceBuilder().build()
+        guard let vSource = MCCoreVideoSourceBuilder().build(),
+              let aSource = MCCustomAudioSourceBuilder().build() else {
+            throw NSError(domain: "DEKA.Millicast", code: 1, userInfo: [NSLocalizedDescriptionKey: "Could not create Millicast media sources."])
+        }
         guard let vTrack = vSource.startCapture() as? MCVideoTrack,
               let aTrack = aSource.startCapture() as? MCAudioTrack else {
             throw NSError(domain: "DEKA.Millicast", code: 1, userInfo: [NSLocalizedDescriptionKey: "Could not create WebRTC tracks."])

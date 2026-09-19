@@ -10,7 +10,7 @@
 import AVFoundation
 import UIKit
 
-final class CameraManager: NSObject {
+final class CameraManager: NSObject, @unchecked Sendable {
 
     enum CameraError: LocalizedError {
         case notAuthorized, noDevice, cannotAddInput, cannotAddOutput, modeUnsupported(CaptureMode)

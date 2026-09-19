@@ -81,7 +81,7 @@ final class AudioEngine {
     func configureSession() throws {
         let s = AVAudioSession.sharedInstance()
         try s.setCategory(.playAndRecord, mode: .videoRecording,
-                          options: [.allowBluetooth, .allowBluetoothA2DP, .defaultToSpeaker])
+                          options: [.allowBluetoothHFP, .allowBluetoothA2DP, .defaultToSpeaker])
         try s.setPreferredSampleRate(Self.targetSampleRate)
         try s.setPreferredIOBufferDuration(0.01)   // 10 ms: WebRTC's native frame size
         try s.setActive(true, options: [])
