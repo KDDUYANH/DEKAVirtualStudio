@@ -384,7 +384,7 @@ final class StudioController {
                                       minVideoBitrateKbps: project.output.minVideoBitrateKbps,
                                       audioBitrateKbps: project.output.audioBitrateKbps,
                                       videoCodec: project.output.videoCodec,
-                                      streamName: project.output.srtPublishStreamId,
+                                      streamName: project.output.srtStreamId,
                                       srtPublishURL: publishURL,
                                       srtReturnURL: returnURL)
         // Open the gate and attach the publisher ONLY now — the explicit operator action.

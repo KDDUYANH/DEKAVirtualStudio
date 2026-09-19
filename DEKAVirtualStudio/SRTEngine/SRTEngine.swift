@@ -168,9 +168,7 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
         self.returnStream = stream
 
         // Attach Metal view to receive decoded frames
-        DispatchQueue.main.async { [weak self] in
-            self?.returnView.attachStream(stream)
-        }
+        await stream.addOutput(returnView)
         try await conn.connect(url)
         await stream.play()
 
@@ -180,10 +178,8 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
 
     func stopReturnFeed() async {
         isReturnActive.set(false)
-        DispatchQueue.main.async { [weak self] in
-            self?.returnView.attachStream(nil)
-        }
         if let stream = returnStream {
+            await stream.removeOutput(returnView)
             await stream.close()
         }
         returnStream = nil
@@ -250,7 +246,7 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
         if let channelData = pcm.int16ChannelData {
             audio.samples.withUnsafeBufferPointer { ptr in
                 guard let base = ptr.baseAddress else { return }
-                channelData[0].copyMemory(from: base, byteCount: audio.samples.count * MemoryLayout<Int16>.size)
+                memcpy(channelData[0], base, audio.samples.count * MemoryLayout<Int16>.size)
             }
         }
         let time = AVAudioTime(hostTime: mach_absolute_time())
