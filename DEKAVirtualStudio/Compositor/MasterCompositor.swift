@@ -307,7 +307,7 @@ final class MasterCompositor: CameraFrameConsumer {
         case .none: u.bgType = Int32(DEKA_BG_NONE)
         case .solid: u.bgType = Int32(DEKA_BG_SOLID)
         case .gradient: u.bgType = Int32(DEKA_BG_GRADIENT)
-        case .image, .video:
+        case .image, .video, .browser:
             if let frame = backgrounds.frame(for: bg, commandBuffer: cb) {
                 bgTexture = frame.texture
                 u.bgAspectFix = frame.aspectFix
