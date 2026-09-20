@@ -49,7 +49,7 @@ final class MasterCompositor: CameraFrameConsumer {
         var outputSize = CGSize(width: 1920, height: 1080)
         var rotate180 = false
         var mirror = false
-        var cleanFeed = true
+        var cleanFeed = false
     }
     let config = Locked(Config())
 

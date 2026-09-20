@@ -184,4 +184,9 @@ final class SRTConfigurationTests: XCTestCase {
         XCTAssertEqual(bg.browserURL, "https://deka.live/dashboard")
         XCTAssertEqual(bg.browserFPS, 60)
     }
+
+    func testCleanFeedDefaultIsFalse() {
+        let output = OutputSettings()
+        XCTAssertFalse(output.cleanFeedLiveOutput, "Clean feed must be disabled by default so graphics overlays are broadcast to stream")
+    }
 }

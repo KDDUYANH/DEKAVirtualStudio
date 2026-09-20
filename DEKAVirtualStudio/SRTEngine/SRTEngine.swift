@@ -56,6 +56,7 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
     // Serial stream queue & backpressure lock to prevent task pileup & memory exhaustion
     private let streamQueue = DispatchQueue(label: "dtek.stream.queue", qos: .userInteractive)
     private let isEncodingFrame = Locked(false)
+    private let lastEncodingStart = Locked<Double>(0)
 
     init(gate: PrivacyGate = PrivacyGate()) {
         self.gate = gate
@@ -66,6 +67,8 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
 
     func start(configuration: StreamConfiguration) async throws {
         userStopped = false
+        reconnectTask?.cancel()
+        reconnectTask = nil
         self.configuration = configuration
         setState(.connecting)
         onEvent?("Connecting to SRT: \(configuration.srtPublishURL)")
@@ -160,6 +163,46 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
         publishConnection = nil
     }
 
+    // MARK: - Auto-Reconnect
+
+    private func handleDisconnect() {
+        guard !userStopped, isPublishing.get(), reconnectTask == nil, let cfg = configuration else { return }
+        scheduleReconnect(cfg: cfg)
+    }
+
+    private func scheduleReconnect(cfg: StreamConfiguration) {
+        reconnectTask?.cancel()
+        reconnectTask = Task { [weak self] in
+            guard let self else { return }
+            await self.teardownPublish()
+
+            var attempt = 1
+            while !self.userStopped && !Task.isCancelled {
+                guard let delay = self.reconnectPolicy.delay(forAttempt: attempt) else {
+                    self.setState(.failed("SRT connection lost: max attempts exceeded"))
+                    self.onEvent?("SRT connection failed after \(self.reconnectPolicy.maxAttempts) attempts.")
+                    break
+                }
+
+                self.setState(.reconnecting(attempt: attempt))
+                self.onEvent?("SRT disconnected. Reconnecting in \(String(format: "%.1f", delay))s (attempt \(attempt)/\(self.reconnectPolicy.maxAttempts))…")
+
+                try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                if self.userStopped || Task.isCancelled { break }
+
+                do {
+                    try await self.connectAndPublish(cfg)
+                    self.onEvent?("SRT connection restored!")
+                    self.reconnectTask = nil
+                    return
+                } catch {
+                    attempt += 1
+                }
+            }
+            self.reconnectTask = nil
+        }
+    }
+
     // MARK: - SRT Input (Return Program / Monitor Feed)
 
     func startReturnFeed(urlString: String) async throws {
@@ -201,9 +244,19 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
     func consume(master: MasterFrame) {
         guard gate.allowsUpload, isPublishing.get(), let stream = publishStream else { return }
 
-        // Backpressure check: if previous frame is still encoding, drop this frame to avoid memory spike / jetsam kill
-        guard !isEncodingFrame.get() else { return }
+        // Backpressure check: if previous frame is still encoding, drop this frame unless timed out (>0.5s)
+        let now = hostTimeSeconds()
+        let busy = isEncodingFrame.get()
+        if busy {
+            if now - lastEncodingStart.get() > 0.5 {
+                // Timeout on previous frame: release lock to resume encoding pipeline
+                isEncodingFrame.set(false)
+            } else {
+                return
+            }
+        }
         isEncodingFrame.set(true)
+        lastEncodingStart.set(now)
 
         var timing = CMSampleTimingInfo(
             duration: .invalid,
@@ -288,7 +341,15 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
         statsTask = Task { [weak self] in
             while !Task.isCancelled {
                 try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
-                guard let self, let conn = self.publishConnection, await conn.connected else { continue }
+                guard let self else { break }
+                guard let conn = self.publishConnection else { continue }
+                let isConn = await conn.connected
+                if !isConn {
+                    if self.isPublishing.get() && !self.userStopped {
+                        self.handleDisconnect()
+                    }
+                    continue
+                }
 
                 if let perf = await conn.performanceData {
                     var s = self.statsBox.get()
@@ -301,7 +362,8 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
                     }
                     s.connectionState = "connected"
                     self.statsBox.set(s)
-                    self.onStats?(s)
+                    let cb = self.onStats
+                    DispatchQueue.main.async { cb?(s) }
                 }
             }
         }

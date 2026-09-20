@@ -12,15 +12,17 @@ import MetalKit
 final class WebBrowserBackground: NSObject, WKNavigationDelegate, @unchecked Sendable {
 
     private let context: MetalContext
+    private let textureLoader: MTKTextureLoader
     private var webView: WKWebView?
     private var captureTask: Task<Void, Never>?
     private let textureBox = Locked<MTLTexture?>(nil)
-    private var currentURLString = ""
+    private let currentURLString = Locked<String>("")
     private var blurred: (small: MTLTexture, tmp: MTLTexture, out: MTLTexture)?
     private var isCapturing = false
 
     init(context: MetalContext) {
         self.context = context
+        self.textureLoader = MTKTextureLoader(device: context.device)
         super.init()
     }
 
@@ -29,8 +31,8 @@ final class WebBrowserBackground: NSObject, WKNavigationDelegate, @unchecked Sen
         guard !trimmed.isEmpty else { return }
 
         let validURLString = trimmed.contains("://") ? trimmed : "https://\(trimmed)"
-        if webView != nil && currentURLString == validURLString { return }
-        currentURLString = validURLString
+        if currentURLString.get() == validURLString { return }
+        currentURLString.set(validURLString)
 
         DispatchQueue.main.async { [weak self] in
             guard let self else { return }
@@ -84,8 +86,7 @@ final class WebBrowserBackground: NSObject, WKNavigationDelegate, @unchecked Sen
             let image = try await wv.takeSnapshot(configuration: snapConfig)
             guard let cgImage = image.cgImage else { return }
 
-            let loader = MTKTextureLoader(device: context.device)
-            let texture = try? await loader.newTexture(cgImage: cgImage, options: [
+            let texture = try? await textureLoader.newTexture(cgImage: cgImage, options: [
                 .SRGB: false,
                 .generateMipmaps: false
             ])
@@ -128,11 +129,13 @@ final class WebBrowserBackground: NSObject, WKNavigationDelegate, @unchecked Sen
     func stop() {
         captureTask?.cancel()
         captureTask = nil
+        currentURLString.set("")
         DispatchQueue.main.async { [weak self] in
             self?.webView?.stopLoading()
             self?.webView = nil
         }
         textureBox.set(nil)
+        blurred = nil
     }
 
     // Ignore SSL errors for local intranet/dashboards

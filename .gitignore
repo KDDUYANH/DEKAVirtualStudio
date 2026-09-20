@@ -5,6 +5,7 @@ xcuserdata/
 DerivedData/
 build/
 build-output/
+build_output/
 *.ipa
 *.dSYM.zip
 *.xcresult

@@ -53,13 +53,15 @@ final class BackgroundEngine {
 
     // MARK: Render-thread API
 
-    private var browserBackground: WebBrowserBackground?
+    private let browserBackground = Locked<WebBrowserBackground?>(nil)
 
     private func activeBrowserBackground() -> WebBrowserBackground {
-        if let b = browserBackground { return b }
-        let b = WebBrowserBackground(context: context)
-        browserBackground = b
-        return b
+        browserBackground.mutate { b in
+            if let b { return b }
+            let newB = WebBrowserBackground(context: context)
+            b = newB
+            return newB
+        }
     }
 
     /// Returns the background texture for these settings, or nil if it isn't ready yet
@@ -189,12 +191,14 @@ final class BackgroundEngine {
     func purge() {
         images.set([:])
         stopVideos()
-        browserBackground?.stop()
-        browserBackground = nil
+        browserBackground.mutate { b in
+            b?.stop()
+            b = nil
+        }
     }
 
     func reloadBrowser() {
-        browserBackground?.reload()
+        browserBackground.get()?.reload()
     }
 }
 

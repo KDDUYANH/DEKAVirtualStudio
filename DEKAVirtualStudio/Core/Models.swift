@@ -249,7 +249,7 @@ struct OutputSettings: Codable, Equatable {
     var region: String = "auto"
     var transition: TransitionKind = .fade
     var transitionDuration: Double = 0.5
-    var cleanFeedLiveOutput: Bool = true
+    var cleanFeedLiveOutput: Bool = false
 
     // Destination selector: SRT Server or Dolby OptiView (Millicast)
     var destination: StreamDestination = .srtServer

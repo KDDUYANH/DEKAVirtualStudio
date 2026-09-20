@@ -31,7 +31,7 @@ final class PreviewMetalView: UIView {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        let scale = window?.screen.nativeScale ?? UIScreen.main.nativeScale
+        let scale = window?.windowScene?.screen.nativeScale ?? window?.screen.nativeScale ?? 2.0
         let size = CGSize(width: bounds.width * scale, height: bounds.height * scale)
         metalLayer.drawableSize = size
         drawableSize.set(size)
