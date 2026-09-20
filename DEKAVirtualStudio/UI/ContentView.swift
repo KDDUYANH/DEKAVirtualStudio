@@ -150,15 +150,12 @@ struct StatusBar: View {
     @Environment(StudioController.self) private var studio
     var body: some View {
         HStack(spacing: 6) {
-            Text("DEKA VIRTUAL STUDIO").font(.system(size: 11, weight: .heavy)).tracking(1.5).foregroundStyle(Theme.text)
+            Text("D-TEK STUDIO").font(.system(size: 11, weight: .heavy)).tracking(1.5).foregroundStyle(Theme.text)
             Spacer()
             StatusBadge(text: "CAMERA ACTIVE", on: studio.cameraActive)
             StatusBadge(text: studio.micActive ? "MIC ACTIVE" : "MIC OFF", on: studio.micActive)
             StatusBadge(text: studio.streamState.label, on: studio.streamState.isOnAir,
                         color: studio.streamState == .live ? Theme.tally : Theme.warn)
-            if studio.telemetry.recording.isRecording {
-                StatusBadge(text: "REC " + timeString(studio.telemetry.recording.duration), on: true, color: Theme.tally)
-            }
         }
         .padding(.horizontal, 10).padding(.top, 6)
     }
@@ -189,31 +186,30 @@ struct SceneBar: View {
                         }
                         .buttonStyle(.plain)
                     }
+
+                    // (+) Add extra scene on demand
+                    Button {
+                        studio.addScene()
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 11, weight: .bold))
+                            Text("ADD")
+                                .font(.system(size: 10, weight: .bold))
+                        }
+                        .padding(.horizontal, 10).padding(.vertical, 8)
+                        .background(Theme.panelRaised)
+                        .foregroundStyle(Theme.dim)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                    }
+                    .buttonStyle(.plain)
                 }
             }
+            Spacer()
             Pills(options: TransitionKind.allCases, selection: studio.outputBinding(\.transition)) { $0.rawValue.uppercased() }
                 .frame(width: 96)
-            RecordButton()
         }
         .padding(.horizontal, 8).padding(.vertical, 6)
-    }
-}
-
-struct RecordButton: View {
-    @Environment(StudioController.self) private var studio
-    var body: some View {
-        let rec = studio.telemetry.recording.isRecording
-        Button {
-            if rec { Task { await studio.stopRecording() } } else { studio.startRecording() }
-        } label: {
-            HStack(spacing: 5) {
-                Image(systemName: rec ? "stop.fill" : "record.circle").foregroundStyle(Theme.tally)
-                Text(rec ? "STOP" : "REC").font(Theme.label)
-            }
-            .padding(.horizontal, 10).padding(.vertical, 8)
-            .background(Theme.panelRaised).clipShape(RoundedRectangle(cornerRadius: 6))
-        }
-        .buttonStyle(.plain)
     }
 }
 
@@ -244,23 +240,19 @@ struct TelemetryStrip: View {
     @Environment(StudioController.self) private var studio
     var body: some View {
         let t = studio.telemetry
-        HStack(spacing: 12) {
-            metric("MODE", t.mode)
+        HStack(spacing: 14) {
+            metric("FORMAT", t.mode)
             metric("FPS", String(format: "%.0f", t.programFPS), bad: t.programFPS > 0 && t.programFPS < Double(studio.project.output.fps) * 0.9)
-            metric("GPU", String(format: "%.1f ms", t.gpuMs), bad: t.gpuLoad > 0.8)
-            metric("DROP", "\(t.droppedFrames)")
             if t.streamState.isOnAir {
-                metric("BITRATE", String(format: "%.1f Mbps", t.stream.videoBitrateKbps / 1000))
+                metric("STREAM", String(format: "● %.1f Mbps", t.stream.videoBitrateKbps / 1000))
                 metric("RTT", String(format: "%.0f ms", t.stream.rttMs), bad: t.stream.rttMs > 200)
-                metric("LOSS", String(format: "%.2f%%", t.stream.packetLossPercent), bad: t.stream.packetLossPercent > 2)
-                metric("JITTER", String(format: "%.0f ms", t.stream.jitterMs))
-                metric("VIEWERS", "\(t.stream.viewers)")
+                metric("LOSS", String(format: "%.1f%%", t.stream.packetLossPercent), bad: t.stream.packetLossPercent > 2)
+            } else {
+                metric("STREAM", "STANDBY")
             }
-            AudioMeter(levels: t.audio).frame(width: 90)
+            AudioMeter(levels: t.audio).frame(width: 85)
             metric("THERMAL", t.thermal.label, bad: t.thermal >= .serious)
             metric("BATT", t.batteryPercent.map { "\($0)%\(t.charging ? "+" : "")" } ?? "—")
-            metric("MEM", String(format: "%.0f MB", t.memoryMB))
-            if t.aiActive { metric("AI", String(format: "%.0f fps %.0f ms", t.ai.effectiveFPS, t.ai.inferenceMs)) }
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 10).padding(.vertical, 6)

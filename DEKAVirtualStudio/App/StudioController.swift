@@ -157,7 +157,10 @@ final class StudioController {
         } else {
             post(AudioEngine.AudioError.notAuthorized.localizedDescription)
         }
-        compositor?.config.mutate { $0.outputSize = project.output.resolution.size }
+        compositor?.config.mutate {
+            $0.outputSize = project.output.resolution.size
+            $0.cleanFeed = project.output.cleanFeedLiveOutput
+        }
         backgrounds?.outputAspect = Float(project.output.resolution.size.width / project.output.resolution.size.height)
         graphics?.setOutputSize(project.output.resolution.size)
         refreshSceneResources()
@@ -254,6 +257,7 @@ final class StudioController {
         let s = scenesEngine.addScene(named: "Scene \(scenes.count + 1)", copying: activeScene)
         scenes = scenesEngine.scenes
         graphics?.update(sceneID: s.id, settings: s.graphics)
+        post("Added \(s.name)")
         scheduleAutosave()
     }
 
@@ -365,7 +369,11 @@ final class StudioController {
 
     func outputBinding<T: Sendable>(_ kp: WritableKeyPath<OutputSettings, T>) -> Binding<T> {
         Binding(get: { MainActor.assumeIsolated { self.project.output[keyPath: kp] } },
-                set: { v in MainActor.assumeIsolated { self.project.output[keyPath: kp] = v; self.scheduleAutosave() } })
+                set: { v in MainActor.assumeIsolated {
+                    self.project.output[keyPath: kp] = v
+                    self.compositor?.config.mutate { $0.cleanFeed = self.project.output.cleanFeedLiveOutput }
+                    self.scheduleAutosave()
+                } })
     }
 
     // MARK: Preview

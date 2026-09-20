@@ -49,6 +49,7 @@ final class MasterCompositor: CameraFrameConsumer {
         var outputSize = CGSize(width: 1920, height: 1080)
         var rotate180 = false
         var mirror = false
+        var cleanFeed = true
     }
     let config = Locked(Config())
 
@@ -321,17 +322,18 @@ final class MasterCompositor: CameraFrameConsumer {
         u.shadowOffset = SIMD2(bg.shadowOffsetX, bg.shadowOffsetY)
         u.lightWrap = keyMode == .off ? 0 : bg.lightWrap
 
-        // Graphics
+        // Graphics (bypassed if Clean Feed is active for live program output)
         var gfxTexture = context.dummy2D
         var tickerTexture = context.dummy2D
         u.graphicsEnabled = 0
         u.tickerEnabled = 0
-        if let layer = graphics.layer(for: scene.id) {
+        let allowGfx = !config.get().cleanFeed
+        if allowGfx, let layer = graphics.layer(for: scene.id) {
             gfxTexture = layer.texture
             keepAlive.append(contentsOf: layer.keepAlive)
             u.graphicsEnabled = 1
         }
-        if scene.graphics.ticker.enabled, let ticker = graphics.ticker(for: scene.id) {
+        if allowGfx, scene.graphics.ticker.enabled, let ticker = graphics.ticker(for: scene.id) {
             tickerTexture = ticker.texture
             keepAlive.append(contentsOf: ticker.keepAlive)
             u.tickerEnabled = 1

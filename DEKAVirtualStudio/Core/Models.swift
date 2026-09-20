@@ -209,18 +209,20 @@ struct SceneModel: Codable, Equatable, Identifiable {
     var transform = TransformSettings()
 
     static func defaultScenes() -> [SceneModel] {
-        var presenter = SceneModel(name: "Presenter")
-        presenter.graphics.lowerThird.enabled = true
-        var product = SceneModel(name: "Product")
-        product.transform = TransformSettings(scale: 1.15, positionX: 0, positionY: 0)
-        var announcement = SceneModel(name: "Announcement")
-        announcement.graphics.ticker.enabled = true
-        let full = SceneModel(name: "Full Screen")
-        return [presenter, product, announcement, full]
+        // Only 1 primary main scene by default. Extra scenes are created on-demand using (+) button.
+        var main = SceneModel(name: "Main Scene")
+        main.keyMode = .greenScreen
+        return [main]
     }
 }
 
 // MARK: - Output / camera
+
+enum StreamDestination: String, Codable, CaseIterable, Identifiable {
+    case srtServer = "SRT SERVER"
+    case dolbyMillicast = "DOLBY MILLICAST"
+    var id: String { rawValue }
+}
 
 enum Resolution: String, Codable, CaseIterable, Identifiable {
     case hd720 = "720p", hd1080 = "1080p", uhd4k = "4K"
@@ -247,13 +249,23 @@ struct OutputSettings: Codable, Equatable {
     var region: String = "auto"
     var transition: TransitionKind = .fade
     var transitionDuration: Double = 0.5
+    var cleanFeedLiveOutput: Bool = true
 
-    // SRT Output (Publishing to MediaMTX / vMix)
+    // Destination selector: SRT Server or Dolby OptiView (Millicast)
+    var destination: StreamDestination = .srtServer
+
+    // SRT Server Settings (Publishing to MediaMTX / vMix / OBS)
     var srtHost: String = "192.168.1.100"
     var srtPort: Int = 9000
     var srtStreamId: String = "publish:cam1"
     var srtLatencyMs: Int = 200
     var srtPassphrase: String = ""
+
+    // Dolby OptiView (Millicast) Settings
+    var dolbyEndpoint: String = "live-srt.millicast.com"
+    var dolbyPort: Int = 9000
+    var dolbyStreamName: String = "dtek-studio"
+    var dolbyPublishingToken: String = ""
 
     // SRT Input (Return Program Feed from vMix / MediaMTX)
     var srtReturnEnabled: Bool = false
@@ -262,12 +274,23 @@ struct OutputSettings: Codable, Equatable {
     var srtReturnStreamId: String = "read:program"
 
     var srtPublishURLString: String {
-        let host = srtHost.trimmingCharacters(in: .whitespacesAndNewlines)
-        let streamId = srtStreamId.trimmingCharacters(in: .whitespacesAndNewlines)
-        var s = "srt://\(host.isEmpty ? "127.0.0.1" : host):\(srtPort)?mode=caller&latency=\(srtLatencyMs)"
-        if !streamId.isEmpty { s += "&streamid=\(streamId)" }
-        if !srtPassphrase.isEmpty { s += "&passphrase=\(srtPassphrase)" }
-        return s
+        switch destination {
+        case .srtServer:
+            let host = srtHost.trimmingCharacters(in: .whitespacesAndNewlines)
+            let streamId = srtStreamId.trimmingCharacters(in: .whitespacesAndNewlines)
+            var s = "srt://\(host.isEmpty ? "127.0.0.1" : host):\(srtPort)?mode=caller&latency=\(srtLatencyMs)"
+            if !streamId.isEmpty { s += "&streamid=\(streamId)" }
+            if !srtPassphrase.isEmpty { s += "&passphrase=\(srtPassphrase)" }
+            return s
+        case .dolbyMillicast:
+            let endpoint = dolbyEndpoint.trimmingCharacters(in: .whitespacesAndNewlines)
+            let streamName = dolbyStreamName.trimmingCharacters(in: .whitespacesAndNewlines)
+            let token = dolbyPublishingToken.trimmingCharacters(in: .whitespacesAndNewlines)
+            var s = "srt://\(endpoint.isEmpty ? "live-srt.millicast.com" : endpoint):\(dolbyPort)?mode=caller&latency=\(srtLatencyMs)"
+            if !streamName.isEmpty { s += "&streamid=\(streamName)" }
+            if !token.isEmpty { s += "&passphrase=\(token)" }
+            return s
+        }
     }
 
     var srtReturnURLString: String {

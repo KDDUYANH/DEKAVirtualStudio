@@ -202,42 +202,39 @@ struct KeyPanel: View {
     var body: some View {
         let scene = studio.activeScene
         VStack(alignment: .leading, spacing: 10) {
-            Pills(options: KeyMode.allCases, selection: studio.sceneBinding(\.keyMode)) { m in
-                m == .greenScreen ? "CHROMA" : (m == .aiCutout ? "AI" : "OFF")
+            PanelSection(title: "CHROMAKEY MODE (GREEN ONLY)") {
+                Pills(options: [KeyMode.greenScreen, KeyMode.off], selection: studio.sceneBinding(\.keyMode)) { m in
+                    m == .greenScreen ? "GREEN SCREEN" : "OFF"
+                }
             }
-            PanelSection(title: "MONITOR") {
+
+            PanelSection(title: "MONITOR VIEW") {
                 Pills(options: [Int32(DEKA_PREVIEW_PROGRAM), Int32(DEKA_PREVIEW_MATTE), Int32(DEKA_PREVIEW_ORIGINAL)],
                       selection: Binding(get: { studio.previewMode }, set: { studio.setPreviewMode($0) })) { m in
-                    m == Int32(DEKA_PREVIEW_MATTE) ? "MATTE" : (m == Int32(DEKA_PREVIEW_ORIGINAL) ? "ORIGINAL" : "COMPOSITE")
+                    m == Int32(DEKA_PREVIEW_MATTE) ? "CHECK MATTE" : (m == Int32(DEKA_PREVIEW_ORIGINAL) ? "ORIGINAL" : "COMPOSITE")
+                }
+
+                if studio.previewMode == Int32(DEKA_PREVIEW_MATTE) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "eye.fill").font(.system(size: 10))
+                        Text("CHECK MATTE IS LOCAL PREVIEW ONLY · LIVE STREAM SENDS CLEAN FEED")
+                            .font(.system(size: 8.5, weight: .bold))
+                    }
+                    .foregroundStyle(Theme.warn)
+                    .padding(6)
+                    .background(Theme.panelRaised)
+                    .clipShape(RoundedRectangle(cornerRadius: 6))
                 }
             }
+
             if scene.keyMode == .greenScreen {
-                PanelSection(title: "KEY COLOR") {
-                    Pills(options: KeyColorPreset.allCases, selection: studio.sceneBinding(\.chroma.preset)) { $0.rawValue.uppercased() }
-                    if scene.chroma.preset == .custom {
-                        ColorWellRow(label: "CUSTOM", color: studio.sceneBinding(\.chroma.customColor))
-                    }
-                }
-                PanelSection(title: "MATTE") {
+                PanelSection(title: "GREEN KEY TUNING") {
                     ValueSlider(label: "SIMILARITY", value: studio.sceneBinding(\.chroma.similarity), range: 0.01...0.5, neutral: 0.10, format: "%.3f")
                     ValueSlider(label: "SMOOTHNESS", value: studio.sceneBinding(\.chroma.smoothness), range: 0.001...0.3, neutral: 0.08, format: "%.3f")
-                    ValueSlider(label: "SPILL", value: studio.sceneBinding(\.chroma.spill), range: 0...0.5, neutral: 0.10, format: "%.3f")
-                    ValueSlider(label: "EDGE", value: studio.sceneBinding(\.chroma.edge), range: -1...1)
+                    ValueSlider(label: "SPILL REDUCTION", value: studio.sceneBinding(\.chroma.spill), range: 0...0.5, neutral: 0.10, format: "%.3f")
+                    ValueSlider(label: "EDGE CHOKE", value: studio.sceneBinding(\.chroma.edge), range: -1...1)
                     ValueSlider(label: "FEATHER", value: studio.sceneBinding(\.chroma.feather), range: 0...20, neutral: 2, format: "%.0f px")
                     ValueSlider(label: "OPACITY", value: studio.sceneBinding(\.chroma.opacity), range: 0...1, neutral: 1)
-                }
-            }
-            if scene.keyMode == .aiCutout {
-                PanelSection(title: "AI CUTOUT") {
-                    Pills(options: SegmentationQuality.allCases, selection: studio.sceneBinding(\.segmentation.quality)) { $0.rawValue.uppercased() }
-                    Pills(options: [10, 15, 30], selection: studio.sceneBinding(\.segmentation.targetFPS)) { "\($0) FPS" }
-                    ToggleRow(label: "FALL BACK TO CHROMA IF SLOW", isOn: studio.sceneBinding(\.segmentation.fallbackToChroma))
-                    ValueSlider(label: "EDGE", value: studio.sceneBinding(\.chroma.edge), range: -1...1)
-                    ValueSlider(label: "FEATHER", value: studio.sceneBinding(\.chroma.feather), range: 0...20, neutral: 2, format: "%.0f px")
-                    let ai = studio.telemetry.ai
-                    Text("\(ai.backend)\n\(String(format: "%.0f fps · %.0f ms · target %ld", ai.effectiveFPS, ai.inferenceMs, ai.targetFPS))")
-                        .font(Theme.label).foregroundStyle(Theme.dim)
-                    if let e = ai.lastError { Text(e).font(Theme.label).foregroundStyle(Theme.tally) }
                 }
             }
         }

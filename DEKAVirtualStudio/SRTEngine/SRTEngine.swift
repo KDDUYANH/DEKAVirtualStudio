@@ -53,6 +53,10 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
     private var lastChannels: Int = 1
     private var audioFormat: AVAudioFormat?
 
+    // Serial stream queue & backpressure lock to prevent task pileup & memory exhaustion
+    private let streamQueue = DispatchQueue(label: "dtek.stream.queue", qos: .userInteractive)
+    private let isEncodingFrame = Locked(false)
+
     init(gate: PrivacyGate = PrivacyGate()) {
         self.gate = gate
         self.returnView.videoGravity = .resizeAspectFill
@@ -143,6 +147,7 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
         statsTask?.cancel()
         statsTask = nil
         isPublishing.set(false)
+        isEncodingFrame.set(false)
 
         if let stream = publishStream {
             await stream.close()
@@ -196,6 +201,10 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
     func consume(master: MasterFrame) {
         guard gate.allowsUpload, isPublishing.get(), let stream = publishStream else { return }
 
+        // Backpressure check: if previous frame is still encoding, drop this frame to avoid memory spike / jetsam kill
+        guard !isEncodingFrame.get() else { return }
+        isEncodingFrame.set(true)
+
         var timing = CMSampleTimingInfo(
             duration: .invalid,
             presentationTimeStamp: master.presentationTime,
@@ -207,7 +216,10 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
             imageBuffer: master.pixelBuffer,
             formatDescriptionOut: &formatDesc
         )
-        guard err == noErr, let formatDesc else { return }
+        guard err == noErr, let formatDesc else {
+            isEncodingFrame.set(false)
+            return
+        }
 
         var sampleBuffer: CMSampleBuffer?
         let sbErr = CMSampleBufferCreateReadyWithImageBuffer(
@@ -217,10 +229,20 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
             sampleTiming: &timing,
             sampleBufferOut: &sampleBuffer
         )
-        guard sbErr == noErr, let sampleBuffer else { return }
+        guard sbErr == noErr, let sampleBuffer else {
+            isEncodingFrame.set(false)
+            return
+        }
 
-        Task { [stream, sampleBuffer] in
-            await stream.append(sampleBuffer)
+        streamQueue.async { [weak self, weak stream] in
+            guard let self, let stream, self.isPublishing.get() else {
+                self?.isEncodingFrame.set(false)
+                return
+            }
+            Task {
+                await stream.append(sampleBuffer)
+                self.isEncodingFrame.set(false)
+            }
         }
     }
 
@@ -251,8 +273,11 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
         }
         let time = AVAudioTime(hostTime: mach_absolute_time())
 
-        Task { [stream, pcm] in
-            await stream.append(pcm, when: time)
+        streamQueue.async { [weak self, weak stream] in
+            guard let self, let stream, self.isPublishing.get() else { return }
+            Task {
+                await stream.append(pcm, when: time)
+            }
         }
     }
 

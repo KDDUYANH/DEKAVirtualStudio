@@ -130,25 +130,59 @@ struct OutputPanel: View {
                             range: 1000...12000, neutral: 4000, format: "%.0f")
             }
 
-            PanelSection(title: "SRT OUTPUT (BROADCAST)") {
-                HStack(spacing: 6) {
-                    TextField("Server Host / IP", text: studio.outputBinding(\.srtHost))
+            PanelSection(title: "LIVE DESTINATION") {
+                Pills(options: StreamDestination.allCases, selection: studio.outputBinding(\.destination)) { $0.rawValue }
+            }
+
+            if studio.project.output.destination == .srtServer {
+                PanelSection(title: "SRT SERVER SETTINGS") {
+                    HStack(spacing: 6) {
+                        TextField("Host / IP", text: studio.outputBinding(\.srtHost))
+                            .textFieldStyle(.roundedBorder).textInputAutocapitalization(.never).autocorrectionDisabled()
+                        TextField("Port", value: studio.outputBinding(\.srtPort), format: .number)
+                            .textFieldStyle(.roundedBorder).frame(width: 65)
+                    }
+                    TextField("Publish Stream ID (e.g. publish:cam1)", text: studio.outputBinding(\.srtStreamId))
                         .textFieldStyle(.roundedBorder).textInputAutocapitalization(.never).autocorrectionDisabled()
-                    TextField("Port", value: studio.outputBinding(\.srtPort), format: .number)
-                        .textFieldStyle(.roundedBorder).frame(width: 65)
+                    ValueSlider(label: "LATENCY",
+                                value: Binding(get: { Float(studio.project.output.srtLatencyMs) },
+                                               set: { v in studio.outputBinding(\.srtLatencyMs).wrappedValue = Int(v) }),
+                                range: 50...1000, neutral: 200, format: "%.0f ms")
+                    SecureField("Passphrase (optional)", text: studio.outputBinding(\.srtPassphrase))
+                        .textFieldStyle(.roundedBorder)
+                    Text(studio.project.output.srtPublishURLString)
+                        .font(.system(size: 9, design: .monospaced))
+                        .foregroundStyle(Theme.dim)
+                        .lineLimit(2)
                 }
-                TextField("Publish Stream ID (e.g. publish:cam1)", text: studio.outputBinding(\.srtStreamId))
-                    .textFieldStyle(.roundedBorder).textInputAutocapitalization(.never).autocorrectionDisabled()
-                ValueSlider(label: "LATENCY",
-                            value: Binding(get: { Float(studio.project.output.srtLatencyMs) },
-                                           set: { v in studio.outputBinding(\.srtLatencyMs).wrappedValue = Int(v) }),
-                            range: 50...1000, neutral: 200, format: "%.0f ms")
-                SecureField("Passphrase (optional)", text: studio.outputBinding(\.srtPassphrase))
-                    .textFieldStyle(.roundedBorder)
-                Text(studio.project.output.srtPublishURLString)
-                    .font(.system(size: 9, design: .monospaced))
+            } else {
+                PanelSection(title: "DOLBY OPTIVIEW (MILLICAST)") {
+                    HStack(spacing: 6) {
+                        TextField("Dolby Ingest", text: studio.outputBinding(\.dolbyEndpoint))
+                            .textFieldStyle(.roundedBorder).textInputAutocapitalization(.never).autocorrectionDisabled()
+                        TextField("Port", value: studio.outputBinding(\.dolbyPort), format: .number)
+                            .textFieldStyle(.roundedBorder).frame(width: 65)
+                    }
+                    TextField("Dolby Stream Name", text: studio.outputBinding(\.dolbyStreamName))
+                        .textFieldStyle(.roundedBorder).textInputAutocapitalization(.never).autocorrectionDisabled()
+                    SecureField("Dolby Publishing Token", text: studio.outputBinding(\.dolbyPublishingToken))
+                        .textFieldStyle(.roundedBorder)
+                    ValueSlider(label: "LATENCY",
+                                value: Binding(get: { Float(studio.project.output.srtLatencyMs) },
+                                               set: { v in studio.outputBinding(\.srtLatencyMs).wrappedValue = Int(v) }),
+                                range: 50...1000, neutral: 200, format: "%.0f ms")
+                    Text(studio.project.output.srtPublishURLString)
+                        .font(.system(size: 9, design: .monospaced))
+                        .foregroundStyle(Theme.dim)
+                        .lineLimit(2)
+                }
+            }
+
+            PanelSection(title: "BROADCAST CLEAN FEED") {
+                ToggleRow(label: "CLEAN PROGRAM FEED (NO GFX ON STREAM)", isOn: studio.outputBinding(\.cleanFeedLiveOutput))
+                Text("When enabled, the stream sends only talent + background. Check matte and UI overlays are never broadcast.")
+                    .font(.system(size: 8.5))
                     .foregroundStyle(Theme.dim)
-                    .lineLimit(2)
             }
 
             PanelSection(title: "SRT INPUT (RETURN FEED / PiP)") {
@@ -170,14 +204,6 @@ struct OutputPanel: View {
                             value: Binding(get: { Float(studio.project.output.transitionDuration) },
                                            set: { v in studio.outputBinding(\.transitionDuration).wrappedValue = Double(v) }),
                             range: 0.1...2, neutral: 0.5, format: "%.1f s")
-            }
-
-            PanelSection(title: "RECORDING") {
-                Pills(options: RecordingMode.allCases, selection: Binding(get: { studio.recordingMode }, set: { studio.recordingMode = $0 })) { $0.rawValue }
-                let r = studio.telemetry.recording
-                Text("\(SystemMetrics.formatBytes(r.freeBytes)) free" + (r.isRecording ? " · \(SystemMetrics.formatBytes(r.fileBytes))" : ""))
-                    .font(Theme.label).foregroundStyle(Theme.dim)
-                if let w = r.warning { Text(w).font(Theme.label).foregroundStyle(Theme.warn) }
             }
 
             if studio.streamState.isOnAir {

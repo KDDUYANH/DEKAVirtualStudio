@@ -56,9 +56,9 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: $(DEKA_BUNDLE_ID)
-        PRODUCT_NAME: DEKA Virtual Studio
+        PRODUCT_NAME: D-TEK
         PRODUCT_MODULE_NAME: DEKAVirtualStudio
-        MARKETING_VERSION: "0.9.0"
+        MARKETING_VERSION: "1.0.0"
         CURRENT_PROJECT_VERSION: "1"
         SWIFT_OBJC_BRIDGING_HEADER: DEKAVirtualStudio/App/DEKAVirtualStudio-Bridging-Header.h
         MTL_HEADER_SEARCH_PATHS: $(SRCROOT)/DEKAVirtualStudio/MetalEngine/Shaders
@@ -70,7 +70,7 @@ targets:
     info:
       path: DEKAVirtualStudio/App/Info.plist
       properties:
-        CFBundleDisplayName: DEKA Studio
+        CFBundleDisplayName: D-TEK
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSRequiresIPhoneOS: true
@@ -86,11 +86,11 @@ targets:
           - arm64
         UIFileSharingEnabled: true
         LSSupportsOpeningDocumentsInPlace: true
-        NSCameraUsageDescription: "DEKA Virtual Studio uses the camera to produce your live program. Video stays on this iPhone until you press GO LIVE."
-        NSMicrophoneUsageDescription: "DEKA Virtual Studio uses the microphone for program audio. Audio stays on this iPhone until you press GO LIVE."
+        NSCameraUsageDescription: "D-TEK uses the camera to produce your live program. Video stays on this iPhone until you press GO LIVE."
+        NSMicrophoneUsageDescription: "D-TEK uses the microphone for program audio. Audio stays on this iPhone until you press GO LIVE."
         NSPhotoLibraryUsageDescription: "Choose images or videos to use as virtual backgrounds and logos."
-        NSPhotoLibraryAddUsageDescription: "Save local recordings to your photo library."
-        NSLocalNetworkUsageDescription: "Used for ultra-low-latency SRT video streaming and return monitoring over your local Wi-Fi / LAN."
+        NSPhotoLibraryAddUsageDescription: "Save files to your photo library."
+        NSLocalNetworkUsageDescription: "Used for ultra-low-latency SRT and Dolby video streaming over your local Wi-Fi / LAN."
         DEKATokenServiceURL: $(DEKA_TOKEN_SERVICE_URL)
         ITSAppUsesNonExemptEncryption: false
 
