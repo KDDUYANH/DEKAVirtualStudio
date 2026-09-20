@@ -3,8 +3,10 @@ import XCTest
 
 final class SceneEngineTests: XCTestCase {
     func testCutHasNoOutgoing() {
-        let e = SceneEngine(scenes: SceneModel.defaultScenes(), activeID: nil)
-        let target = e.scenes[1].id
+        let s1 = SceneModel(name: "Scene 1")
+        let s2 = SceneModel(name: "Scene 2")
+        let e = SceneEngine(scenes: [s1, s2], activeID: s1.id)
+        let target = s2.id
         e.take(target, transition: .cut, duration: 0.5, now: 10)
         let s = e.renderState(at: 10)
         XCTAssertNil(s.outgoing)
@@ -13,9 +15,12 @@ final class SceneEngineTests: XCTestCase {
     }
 
     func testFadeProgressAndCompletion() {
-        let e = SceneEngine(scenes: SceneModel.defaultScenes(), activeID: nil)
+        let s1 = SceneModel(name: "Scene 1")
+        let s2 = SceneModel(name: "Scene 2")
+        let s3 = SceneModel(name: "Scene 3")
+        let e = SceneEngine(scenes: [s1, s2, s3], activeID: s1.id)
         let first = e.activeSceneID
-        let target = e.scenes[2].id
+        let target = s3.id
         e.take(target, transition: .fade, duration: 1, now: 100)
         let mid = e.renderState(at: 100.5)
         XCTAssertEqual(mid.outgoing?.id, first)

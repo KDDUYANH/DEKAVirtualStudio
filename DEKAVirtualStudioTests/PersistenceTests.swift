@@ -15,7 +15,9 @@ final class ProjectManagerTests: XCTestCase {
     func testSaveLoadRoundTrip() throws {
         var p = try pm.create(name: "Studio A")
         p.scenes[0].color.exposure = 0.7
-        p.scenes[1].keyMode = .greenScreen
+        var secondScene = SceneModel(name: "Scene 2")
+        secondScene.keyMode = .greenScreen
+        p.scenes.append(secondScene)
         p.output.streamName = "deka-test"
         p.output.srtHost = "10.0.0.1"
         p.output.srtPort = 9000
