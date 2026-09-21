@@ -31,6 +31,26 @@ interface Particle {
 const particles: Particle[] = [];
 const PARTICLE_COUNT = 45;
 
+// Pre-rendered radial glowing sprites for zero-overhead 60 FPS particles
+function createGlowSprite(color: string): HTMLCanvasElement {
+  const c = document.createElement('canvas');
+  c.width = 32;
+  c.height = 32;
+  const sCtx = c.getContext('2d');
+  if (sCtx) {
+    const grad = sCtx.createRadialGradient(16, 16, 0, 16, 16, 16);
+    grad.addColorStop(0, color);
+    grad.addColorStop(0.4, color);
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    sCtx.fillStyle = grad;
+    sCtx.fillRect(0, 0, 32, 32);
+  }
+  return c;
+}
+
+const goldSprite = createGlowSprite('#ffd700');
+const whiteSprite = createGlowSprite('#ffffff');
+
 function initParticles() {
   if (!canvas) return;
   particles.length = 0;
@@ -42,7 +62,7 @@ function initParticles() {
       vy: -Math.random() * 0.6 - 0.2, // Drift upwards
       size: Math.random() * 2.5 + 1,
       alpha: Math.random() * 0.6 + 0.2,
-      color: Math.random() > 0.3 ? '#ffd700' : '#ffffff',
+      color: Math.random() > 0.3 ? 'gold' : 'white',
     });
   }
 }
@@ -59,16 +79,12 @@ function renderParticles() {
     if (p.x < -10) p.x = 1930;
     if (p.x > 1930) p.x = -10;
 
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-    ctx.fillStyle = p.color;
     ctx.globalAlpha = p.alpha;
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = '#ffd700';
-    ctx.fill();
+    const sprite = p.color === 'gold' ? goldSprite : whiteSprite;
+    const dim = p.size * 4;
+    ctx.drawImage(sprite, p.x - dim / 2, p.y - dim / 2, dim, dim);
   }
   ctx.globalAlpha = 1.0;
-  ctx.shadowBlur = 0;
 
   requestAnimationFrame(renderParticles);
 }

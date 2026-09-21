@@ -94,7 +94,7 @@ namespace BackgroundEngine.Ndi
                             1,
                             PipeTransmissionMode.Byte,
                             PipeOptions.Asynchronous,
-                            FRAME_SIZE * 2,
+                            FRAME_SIZE * 4,
                             0);
 
                         Console.WriteLine("{\"type\":\"pipe_waiting\"}");

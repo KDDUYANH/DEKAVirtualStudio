@@ -156,6 +156,11 @@ export class NdiController extends EventEmitter {
 
   public sendFrame(bgraBuffer: Buffer): boolean {
     if (this.pipeSocket && !this.pipeSocket.destroyed && this.pipeSocket.writable) {
+      // Backpressure protection: Drop frame if pipe buffer is saturated (> 2 frames backlog)
+      // Broadcast rule: Never queue stale frames; prioritize lowest real-time latency.
+      if (this.pipeSocket.writableLength > 8294400 * 2) {
+        return false;
+      }
       return this.pipeSocket.write(bgraBuffer);
     }
     return false;

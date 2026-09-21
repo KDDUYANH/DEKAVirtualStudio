@@ -9,7 +9,6 @@ import { app, BrowserWindow, ipcMain, WebContentsView } from 'electron';
 import path from 'path';
 import http from 'http';
 import fs from 'fs';
-import { fileURLToPath } from 'url';
 
 import { PersistenceStore } from './persistenceStore.js';
 import { SafetyGate } from './safetyGate.js';
@@ -19,9 +18,6 @@ import { NdiController } from './ndiController.js';
 import { PositionEngine } from '../program/positionEngine.js';
 import { AutoMoveSequencer } from '../program/autoMoveSequencer.js';
 import { PositionId } from './types.js';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 // Core Singletons
 let store: PersistenceStore;
@@ -119,21 +115,42 @@ function createPreviewWindow() {
   });
 }
 
+// Chromium Command Line Flags for 60 FPS Low-Latency GPU Compositing
+app.commandLine.appendSwitch('enable-gpu-rasterization');
+app.commandLine.appendSwitch('enable-zero-copy');
+app.commandLine.appendSwitch('ignore-gpu-blocklist');
+app.commandLine.appendSwitch('use-angle', 'd3d11');
+app.commandLine.appendSwitch('disable-background-timer-throttling');
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
+app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion');
+
 function createProgramWindow() {
   programWindow = new BrowserWindow({
     width: 1920,
     height: 1080,
-    show: false, // Runs off-screen or minimized as dedicated compositor
+    show: false,
     frame: false,
     useContentSize: true,
     backgroundColor: '#000000',
     webPreferences: {
+      offscreen: true, // Native GPU offscreen rendering
       preload: path.join(__dirname, 'preload.js'),
       nodeIntegration: false,
       contextIsolation: true,
       sandbox: true,
-      backgroundThrottling: false, // Ensure full 60fps when in background
+      backgroundThrottling: false, // Maintain 60fps even when hidden
     },
+  });
+
+  // Lock compositor to 60.0 FPS
+  programWindow.webContents.setFrameRate(60);
+
+  // Hook uncompressed frame buffer directly from GPU compositor into NDI pipe
+  programWindow.webContents.on('paint', (_event, _dirty, image) => {
+    if (!ndiController) return;
+    const bgraBuffer = image.getBitmap();
+    ndiController.sendFrame(bgraBuffer);
   });
 
   const programPath = path.join(process.cwd(), 'src', 'program', 'index.html');
