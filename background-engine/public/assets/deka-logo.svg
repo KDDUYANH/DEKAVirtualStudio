@@ -19,7 +19,7 @@
   <polygon points="46,38 68,38 77,60 68,82 46,82 55,60" fill="#07090e" />
 
   <!-- Text -->
-  <text x="110" y="65" font-family="'Space Grotesk', 'Segoe UI', sans-serif" font-size="44" font-weight="900" fill="#ffffff" letter-spacing="4">DEKA</text>
+  <text x="110" y="65" font-family="'Space Grotesk', 'Segoe UI', sans-serif" font-size="44" font-weight="900" fill="#ffffff" letter-spacing="4">D-TEK</text>
   <text x="110" y="92" font-family="'Space Grotesk', 'Segoe UI', sans-serif" font-size="16" font-weight="700" fill="#00f2fe" letter-spacing="6">VIRTUAL STUDIO</text>
   
   <!-- Live Dot -->

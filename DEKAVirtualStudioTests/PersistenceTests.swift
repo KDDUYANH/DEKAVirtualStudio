@@ -18,7 +18,7 @@ final class ProjectManagerTests: XCTestCase {
         var secondScene = SceneModel(name: "Scene 2")
         secondScene.keyMode = .greenScreen
         p.scenes.append(secondScene)
-        p.output.streamName = "deka-test"
+        p.output.streamName = "dtek-test"
         p.output.srtHost = "10.0.0.1"
         p.output.srtPort = 9000
         p.output.srtStreamId = "publish:test"
@@ -29,7 +29,7 @@ final class ProjectManagerTests: XCTestCase {
         let loaded = try pm.load(id: p.id)
         XCTAssertEqual(loaded.scenes[0].color.exposure, 0.7)
         XCTAssertEqual(loaded.scenes[1].keyMode, .greenScreen)
-        XCTAssertEqual(loaded.output.streamName, "deka-test")
+        XCTAssertEqual(loaded.output.streamName, "dtek-test")
         XCTAssertEqual(loaded.output.srtHost, "10.0.0.1")
         XCTAssertEqual(loaded.output.srtPort, 9000)
         XCTAssertEqual(loaded.output.srtStreamId, "publish:test")
@@ -62,7 +62,7 @@ final class ProjectManagerTests: XCTestCase {
 
 final class KeychainTests: XCTestCase {
     func testSetGetDelete() throws {
-        let k = KeychainStore(service: "vn.kdproductions.deka.tests.\(UUID().uuidString)")
+        let k = KeychainStore(service: "vn.kdproductions.dtek.tests.\(UUID().uuidString)")
         try k.setString("secret", for: "a")
         XCTAssertEqual(k.string(for: "a"), "secret")
         try k.setString("rotated", for: "a")                    // update path

@@ -33,15 +33,15 @@ final class Locked<Value>: @unchecked Sendable {
 }
 
 enum Log {
-    static let camera   = Logger(subsystem: "vn.kdproductions.deka", category: "camera")
-    static let metal    = Logger(subsystem: "vn.kdproductions.deka", category: "metal")
-    static let pipeline = Logger(subsystem: "vn.kdproductions.deka", category: "pipeline")
-    static let ai       = Logger(subsystem: "vn.kdproductions.deka", category: "ai")
-    static let audio    = Logger(subsystem: "vn.kdproductions.deka", category: "audio")
-    static let stream   = Logger(subsystem: "vn.kdproductions.deka", category: "stream")
-    static let record   = Logger(subsystem: "vn.kdproductions.deka", category: "record")
-    static let security = Logger(subsystem: "vn.kdproductions.deka", category: "security")
-    static let project  = Logger(subsystem: "vn.kdproductions.deka", category: "project")
+    static let camera   = Logger(subsystem: "vn.kdproductions.dtek", category: "camera")
+    static let metal    = Logger(subsystem: "vn.kdproductions.dtek", category: "metal")
+    static let pipeline = Logger(subsystem: "vn.kdproductions.dtek", category: "pipeline")
+    static let ai       = Logger(subsystem: "vn.kdproductions.dtek", category: "ai")
+    static let audio    = Logger(subsystem: "vn.kdproductions.dtek", category: "audio")
+    static let stream   = Logger(subsystem: "vn.kdproductions.dtek", category: "stream")
+    static let record   = Logger(subsystem: "vn.kdproductions.dtek", category: "record")
+    static let security = Logger(subsystem: "vn.kdproductions.dtek", category: "security")
+    static let project  = Logger(subsystem: "vn.kdproductions.dtek", category: "project")
 }
 
 /// Monotonic host time in seconds (same clock as AVCaptureSession / AVAudioTime host time).

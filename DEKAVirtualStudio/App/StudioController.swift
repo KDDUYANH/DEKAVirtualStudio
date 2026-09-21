@@ -446,7 +446,7 @@ final class StudioController {
     func stopRecording() async {
         compositor?.removeSink(recorder)
         audio.removeSink(recorder)
-        if let url = await recorder.stop() { post("Saved \(url.lastPathComponent) (Files app → DEKA Studio → Recordings)") }
+        if let url = await recorder.stop() { post("Saved \(url.lastPathComponent) (Files app → D-TEK Studio → Recordings)") }
     }
 
     // MARK: Thermal

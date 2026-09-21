@@ -170,7 +170,7 @@ class Compositor {
   }
 
   updateTickerContent(node, layer) {
-    const text = layer.source.content?.tickerText || 'DEKA VIRTUAL STUDIO 24/7 BACKGROUND ENGINE';
+    const text = layer.source.content?.tickerText || 'D-TEK STUDIO 24/7 BACKGROUND ENGINE';
     node.innerHTML = `<div class="ticker-track">${text}</div>`;
   }
 

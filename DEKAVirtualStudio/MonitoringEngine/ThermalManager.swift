@@ -70,7 +70,7 @@ struct ThermalPolicy: Codable, Equatable {
         case .nominal:
             return []
         case .fair:
-            return pending.isEmpty ? [] : [.warn("Device is warming up. If it gets hot, DEKA will first \(Self.describe(pending[0])).")]
+            return pending.isEmpty ? [] : [.warn("Device is warming up. If it gets hot, D-TEK will first \(Self.describe(pending[0])).")]
         case .serious:
             guard let next = pending.first else { return [.warn("Device is hot. Consider shade, a fan, or removing the case.")] }
             return [.warn("Device is hot: \(Self.describe(next))."), .apply(next)]

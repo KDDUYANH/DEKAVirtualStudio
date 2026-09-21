@@ -3,7 +3,7 @@
 //  Landscape operator layout:
 //
 //  ┌──────────────────────────────────────────┬──────┬──────────────┐
-//  │ DEKA VIRTUAL STUDIO  CAM● MIC● STREAM OFF│ rail │  panel       │
+//  │ D-TEK STUDIO         CAM● MIC● STREAM OFF│ rail │  panel       │
 //  │                PROGRAM                   │ CAM  │              │
 //  │ [SCENE 1][SCENE 2][SCENE 3][SCENE 4]  REC│ COLOR│              │
 //  │ 1080p60 · 5.8 Mbps · RTT 38 · L/R · GPU  │ …    │  [GO LIVE]   │
@@ -245,6 +245,7 @@ struct TelemetryStrip: View {
             metric("FPS", String(format: "%.0f", t.programFPS), bad: t.programFPS > 0 && t.programFPS < Double(studio.project.output.fps) * 0.9)
             if t.streamState.isOnAir {
                 metric("STREAM", String(format: "● %.1f Mbps", t.stream.videoBitrateKbps / 1000))
+                metric("HEALTH", t.stream.health, bad: t.stream.health == "POOR" || t.stream.health == "FAIR")
                 metric("RTT", String(format: "%.0f ms", t.stream.rttMs), bad: t.stream.rttMs > 200)
                 metric("LOSS", String(format: "%.1f%%", t.stream.packetLossPercent), bad: t.stream.packetLossPercent > 2)
             } else {

@@ -44,7 +44,7 @@ final class MetalContext {
     init() throws {
         guard let device = MTLCreateSystemDefaultDevice() else { throw MetalError.noDevice }
         guard let queue = device.makeCommandQueue() else { throw MetalError.noQueue }
-        queue.label = "DEKA.master"
+        queue.label = "DTEK.master"
         guard let library = device.makeDefaultLibrary() else { throw MetalError.noLibrary }
         self.device = device
         self.queue = queue

@@ -35,7 +35,7 @@ enum TokenServiceError: LocalizedError, Equatable {
     case notConfigured, insecureURL, notSignedIn, http(Int, String), badResponse
     var errorDescription: String? {
         switch self {
-        case .notConfigured: return "Token service URL is not set (DEKA_TOKEN_SERVICE_URL)."
+        case .notConfigured: return "Token service URL is not set (DTEK_TOKEN_SERVICE_URL)."
         case .insecureURL: return "Token service must use HTTPS."
         case .notSignedIn: return "Sign in with your operator key first."
         case .http(let code, let msg): return "Token service error \(code): \(msg)"
@@ -65,7 +65,7 @@ final class TokenService {
         cfg.tlsMinimumSupportedProtocolVersion = .TLSv12
         cfg.urlCache = nil
         self.session = URLSession(configuration: cfg)
-        let raw = (bundle.object(forInfoDictionaryKey: "DEKATokenServiceURL") as? String)?
+        let raw = ((bundle.object(forInfoDictionaryKey: "DTEKTokenServiceURL") ?? bundle.object(forInfoDictionaryKey: "DEKATokenServiceURL")) as? String)?
             .trimmingCharacters(in: .whitespaces) ?? ""
         self.baseURL = raw.isEmpty || raw.contains("example.com") ? nil : URL(string: raw)
     }

@@ -30,7 +30,7 @@ final class RecordingEngine: MasterFrameSink, AudioSampleSink {
     static let lowStorageWarnBytes: Int64 = 2_000_000_000
     static let lowStorageStopBytes: Int64 = 500_000_000
 
-    private let queue = DispatchQueue(label: "deka.recording", qos: .userInitiated)
+    private let queue = DispatchQueue(label: "dtek.recording", qos: .userInitiated)
     private var writer: AVAssetWriter?
     private var videoInput: AVAssetWriterInput?
     private var audioInput: AVAssetWriterInput?
@@ -58,11 +58,11 @@ final class RecordingEngine: MasterFrameSink, AudioSampleSink {
                codec: AVVideoCodecType = .hevc) throws {
         let free = SystemMetrics.freeStorageBytes()
         guard free > Self.lowStorageStopBytes else {
-            throw NSError(domain: "DEKA.Recording", code: 1, userInfo: [NSLocalizedDescriptionKey:
+            throw NSError(domain: "DTEK.Recording", code: 1, userInfo: [NSLocalizedDescriptionKey:
                 "Not enough storage to record (\(SystemMetrics.formatBytes(free)) free)."])
         }
         let f = DateFormatter(); f.dateFormat = "yyyyMMdd_HHmmss"
-        let url = Self.directory.appendingPathComponent("DEKA_\(mode.rawValue)_\(f.string(from: Date())).mov")
+        let url = Self.directory.appendingPathComponent("DTEK_\(mode.rawValue)_\(f.string(from: Date())).mov")
         let writer = try AVAssetWriter(outputURL: url, fileType: .mov)
 
         // Local masters are recorded at high quality (the stream is bitrate-limited, the file needn't be).
@@ -86,7 +86,7 @@ final class RecordingEngine: MasterFrameSink, AudioSampleSink {
         video.expectsMediaDataInRealTime = true
         // CAMERA mode records sensor-native buffers; flag the orientation instead of re-rendering.
         if mode == .camera && cameraRotated180 { video.transform = CGAffineTransform(rotationAngle: .pi) }
-        guard writer.canAdd(video) else { throw NSError(domain: "DEKA.Recording", code: 2) }
+        guard writer.canAdd(video) else { throw NSError(domain: "DTEK.Recording", code: 2) }
         writer.add(video)
         let adaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: video, sourcePixelBufferAttributes: nil)
 

@@ -29,7 +29,7 @@ final class PixelBufferPool {
         var p: CVPixelBufferPool?
         let status = CVPixelBufferPoolCreate(kCFAllocatorDefault, poolAttrs as CFDictionary, pbAttrs as CFDictionary, &p)
         guard status == kCVReturnSuccess, let p else {
-            throw NSError(domain: "DEKA.PixelBufferPool", code: Int(status),
+            throw NSError(domain: "DTEK.PixelBufferPool", code: Int(status),
                           userInfo: [NSLocalizedDescriptionKey: "Pixel buffer pool creation failed (\(status))"])
         }
         pool = p

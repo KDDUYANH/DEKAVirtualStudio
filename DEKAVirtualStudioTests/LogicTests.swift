@@ -178,10 +178,10 @@ final class SRTConfigurationTests: XCTestCase {
         var bg = BackgroundSettings()
         XCTAssertEqual(bg.kind, .gradient)
         bg.kind = .browser
-        bg.browserURL = "https://deka.live/dashboard"
+        bg.browserURL = "https://dtek.live/dashboard"
         bg.browserFPS = 60
         XCTAssertEqual(bg.kind, .browser)
-        XCTAssertEqual(bg.browserURL, "https://deka.live/dashboard")
+        XCTAssertEqual(bg.browserURL, "https://dtek.live/dashboard")
         XCTAssertEqual(bg.browserFPS, 60)
     }
 

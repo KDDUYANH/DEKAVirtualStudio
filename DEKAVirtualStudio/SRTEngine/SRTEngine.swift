@@ -96,7 +96,7 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
 
     private func connectAndPublish(_ cfg: StreamConfiguration) async throws {
         guard let url = URL(string: cfg.srtPublishURL) else {
-            throw NSError(domain: "DEKA.SRT", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid SRT URL: \(cfg.srtPublishURL)"])
+            throw NSError(domain: "DTEK.SRT", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid SRT URL: \(cfg.srtPublishURL)"])
         }
 
         let connection = SRTConnection()

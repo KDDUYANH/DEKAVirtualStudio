@@ -200,7 +200,7 @@ export function createDefaultScene(tableId: string): Scene {
       },
       source: {
         content: {
-          tickerText: '★ DEKA VIRTUAL STUDIO 24/7 BACKGROUND ENGINE ★ VMIX CEF READY ★ ZERO-DOWNTIME PERSISTENT SESSION ★',
+          tickerText: '★ D-TEK STUDIO 24/7 BACKGROUND ENGINE ★ VMIX CEF READY ★ ZERO-DOWNTIME PERSISTENT SESSION ★',
           speed: 40,
         },
       },

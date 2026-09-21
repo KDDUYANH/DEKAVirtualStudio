@@ -193,7 +193,7 @@
         },
         "source": {
           "content": {
-            "tickerText": "★ DEKA VIRTUAL STUDIO 24/7 BACKGROUND ENGINE ★ VMIX CEF READY ★ ZERO-DOWNTIME PERSISTENT SESSION ★",
+            "tickerText": "★ D-TEK STUDIO 24/7 BACKGROUND ENGINE ★ VMIX CEF READY ★ ZERO-DOWNTIME PERSISTENT SESSION ★",
             "speed": 40
           }
         },
@@ -400,7 +400,7 @@
         },
         "source": {
           "content": {
-            "tickerText": "★ DEKA VIRTUAL STUDIO 24/7 BACKGROUND ENGINE ★ VMIX CEF READY ★ ZERO-DOWNTIME PERSISTENT SESSION ★",
+            "tickerText": "★ D-TEK STUDIO 24/7 BACKGROUND ENGINE ★ VMIX CEF READY ★ ZERO-DOWNTIME PERSISTENT SESSION ★",
             "speed": 40
           }
         },
@@ -607,7 +607,7 @@
         },
         "source": {
           "content": {
-            "tickerText": "★ DEKA VIRTUAL STUDIO 24/7 BACKGROUND ENGINE ★ VMIX CEF READY ★ ZERO-DOWNTIME PERSISTENT SESSION ★",
+            "tickerText": "★ D-TEK STUDIO 24/7 BACKGROUND ENGINE ★ VMIX CEF READY ★ ZERO-DOWNTIME PERSISTENT SESSION ★",
             "speed": 40
           }
         },
@@ -814,7 +814,7 @@
         },
         "source": {
           "content": {
-            "tickerText": "★ DEKA VIRTUAL STUDIO 24/7 BACKGROUND ENGINE ★ VMIX CEF READY ★ ZERO-DOWNTIME PERSISTENT SESSION ★",
+            "tickerText": "★ D-TEK STUDIO 24/7 BACKGROUND ENGINE ★ VMIX CEF READY ★ ZERO-DOWNTIME PERSISTENT SESSION ★",
             "speed": 40
           }
         },
@@ -1021,7 +1021,7 @@
         },
         "source": {
           "content": {
-            "tickerText": "★ DEKA VIRTUAL STUDIO 24/7 BACKGROUND ENGINE ★ VMIX CEF READY ★ ZERO-DOWNTIME PERSISTENT SESSION ★",
+            "tickerText": "★ D-TEK STUDIO 24/7 BACKGROUND ENGINE ★ VMIX CEF READY ★ ZERO-DOWNTIME PERSISTENT SESSION ★",
             "speed": 40
           }
         },
@@ -1228,7 +1228,7 @@
         },
         "source": {
           "content": {
-            "tickerText": "★ DEKA VIRTUAL STUDIO 24/7 BACKGROUND ENGINE ★ VMIX CEF READY ★ ZERO-DOWNTIME PERSISTENT SESSION ★",
+            "tickerText": "★ D-TEK STUDIO 24/7 BACKGROUND ENGINE ★ VMIX CEF READY ★ ZERO-DOWNTIME PERSISTENT SESSION ★",
             "speed": 40
           }
         },
@@ -1239,6 +1239,6 @@
     ],
     "lockedProduction": false,
     "publishedAt": 1789899444924,
-    "version": 49
+    "version": 65
   }
 }

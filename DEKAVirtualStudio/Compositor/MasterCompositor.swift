@@ -42,7 +42,7 @@ final class MasterCompositor: CameraFrameConsumer {
 
     // Output
     private let sinks = Locked<[ObjectIdentifier: MasterFrameSink]>([:])
-    private let deliveryQueue = DispatchQueue(label: "deka.master.delivery", qos: .userInteractive)
+    private let deliveryQueue = DispatchQueue(label: "dtek.master.delivery", qos: .userInteractive)
 
     // Configuration read by the render thread
     struct Config: Equatable {
@@ -75,7 +75,7 @@ final class MasterCompositor: CameraFrameConsumer {
     // LUT textures, loaded off-thread, read on the render thread
     private let loadedLUTs = Locked<[String: LoadedLUT]>([:])
     private let lutLoading = Locked<Set<String>>([])
-    private let lutQueue = DispatchQueue(label: "deka.lut.load", qos: .userInitiated)
+    private let lutQueue = DispatchQueue(label: "dtek.lut.load", qos: .userInitiated)
 
     // Stats
     private let statsBox = Locked(CompositorStats())

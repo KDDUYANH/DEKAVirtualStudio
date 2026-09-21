@@ -26,8 +26,8 @@ final class CameraManager: NSObject, @unchecked Sendable {
     }
 
     let session = AVCaptureSession()
-    let videoQueue = DispatchQueue(label: "deka.camera.video", qos: .userInteractive)
-    private let sessionQueue = DispatchQueue(label: "deka.camera.session", qos: .userInitiated)
+    let videoQueue = DispatchQueue(label: "dtek.camera.video", qos: .userInteractive)
+    private let sessionQueue = DispatchQueue(label: "dtek.camera.session", qos: .userInitiated)
     private let videoOutput = AVCaptureVideoDataOutput()
     private var input: AVCaptureDeviceInput?
     private(set) var device: AVCaptureDevice?

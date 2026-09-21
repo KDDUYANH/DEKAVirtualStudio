@@ -19,7 +19,7 @@ struct ProjectSummary: Identifiable, Equatable {
 
 /// Portable export format.
 struct ProjectArchive: Codable {
-    var format = "deka.virtualstudio.project"
+    var format = "dtek.studio.project"
     var version = 1
     var project: StudioProject
     var assets: [String: Data]              // file name → bytes
@@ -37,7 +37,7 @@ enum ProjectError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .notFound: return "Project not found."
-        case .invalidArchive: return "This file is not a DEKA Virtual Studio project."
+        case .invalidArchive: return "This file is not a D-TEK Studio project."
         }
     }
 }
@@ -177,7 +177,7 @@ final class ProjectManager {
         }
         let archive = ProjectArchive(project: project, assets: assets, luts: archived)
         let safeName = project.name.replacingOccurrences(of: "/", with: "-")
-        let url = fm.temporaryDirectory.appendingPathComponent("\(safeName).deka.json")
+        let url = fm.temporaryDirectory.appendingPathComponent("\(safeName).dtek.json")
         try Self.encoder.encode(archive).write(to: url, options: .atomic)
         return url
     }
@@ -187,7 +187,8 @@ final class ProjectManager {
         defer { if scoped { url.stopAccessingSecurityScopedResource() } }
         let data = try Data(contentsOf: url)
         guard let obj = try JSONSerialization.jsonObject(with: data) as? [String: Any],
-              obj["format"] as? String == "deka.virtualstudio.project",
+              let fmt = obj["format"] as? String,
+              fmt == "dtek.studio.project" || fmt == "deka.virtualstudio.project",
               let projectObj = obj["project"] else { throw ProjectError.invalidArchive }
         var project = try Self.decodeProject(from: JSONSerialization.data(withJSONObject: projectObj))
         struct Payload: Decodable { let assets: [String: Data]; let luts: [ArchivedLUT] }

@@ -28,7 +28,7 @@ final class GraphicsEngine {
     static let tickerRect = SIMD4<Float>(0, 0.925, 1, 0.055)   // x, y, w, h (normalised)
 
     private let context: MetalContext
-    private let queue = DispatchQueue(label: "deka.graphics", qos: .userInitiated)
+    private let queue = DispatchQueue(label: "dtek.graphics", qos: .userInitiated)
     private var pool: PixelBufferPool?
     private var outputSize = CGSize(width: 1920, height: 1080)
 

@@ -1,6 +1,6 @@
 //
 //  DEKAVirtualStudioApp.swift
-//  DEKA Virtual Studio — iPhone virtual production camera.
+//  D-TEK Virtual Studio — iPhone virtual production camera.
 //
 
 import SwiftUI

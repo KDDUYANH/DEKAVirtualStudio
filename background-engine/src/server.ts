@@ -262,7 +262,7 @@ app.get('/api/demo/chat-widget', (req: Request, res: Response) => {
       'Cầu đỏ đang thắng thế rồi anh em ơi',
       'Đồ hoạ nét từng pixel, 60fps không giật lag'
     ];
-    const names = ['QuangHai', 'StudioFan', 'CyberLive', 'BaoLong', 'DekaViewer'];
+    const names = ['QuangHai', 'StudioFan', 'CyberLive', 'BaoLong', 'DtekViewer'];
     setInterval(() => {
       const c = document.getElementById('chat');
       const div = document.createElement('div');
@@ -466,7 +466,7 @@ process.on('unhandledRejection', (reason) => {
 // Start HTTP & WS Server
 httpServer.listen(CONFIG.PORT, CONFIG.HOST, () => {
   console.log(`=======================================================`);
-  console.log(`🎬 DEKA 24/7 BACKGROUND ENGINE & CONTROL HUB IS RUNNING`);
+  console.log(`🎬 D-TEK 24/7 BACKGROUND ENGINE & CONTROL HUB IS RUNNING`);
   console.log(`🌐 Server:  http://localhost:${CONFIG.PORT}`);
   console.log(`📺 vMix Output:  http://localhost:${CONFIG.PORT}/output/table-01`);
   console.log(`🎛️ Control Plane: http://localhost:${CONFIG.PORT}/control/table-01`);

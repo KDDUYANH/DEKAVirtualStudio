@@ -24,6 +24,14 @@ struct StreamStats: Equatable {
     var encoder: String = ""
     var viewers: Int = 0
     var connectionState: String = "idle"
+
+    var health: String {
+        guard connectionState == "connected" else { return connectionState.uppercased() }
+        if packetLossPercent > 5.0 || rttMs > 350 { return "POOR" }
+        if packetLossPercent > 2.0 || rttMs > 180 { return "FAIR" }
+        if rttMs < 80 && packetLossPercent < 0.5 { return "EXCELLENT" }
+        return "GOOD"
+    }
 }
 
 /// Raw counters sampled from one report.

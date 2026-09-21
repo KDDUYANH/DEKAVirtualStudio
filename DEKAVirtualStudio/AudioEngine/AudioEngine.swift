@@ -55,7 +55,7 @@ final class AudioEngine {
     private let settingsBox = Locked(AudioSettings())
     private var converter: AVAudioConverter?
     private var outputFormat: AVAudioFormat?
-    private let queue = DispatchQueue(label: "deka.audio.control", qos: .userInitiated)
+    private let queue = DispatchQueue(label: "dtek.audio.control", qos: .userInitiated)
     private(set) var isRunning = false
 
     var levels: AudioLevels { levelsBox.get() }

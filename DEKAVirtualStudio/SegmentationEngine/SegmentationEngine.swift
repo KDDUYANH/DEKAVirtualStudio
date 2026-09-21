@@ -29,7 +29,7 @@ struct SegmentationStats: Equatable {
 
 final class SegmentationEngine {
 
-    private let queue = DispatchQueue(label: "deka.ai.segmentation", qos: .userInitiated)
+    private let queue = DispatchQueue(label: "dtek.ai.segmentation", qos: .userInitiated)
     private let context: MetalContext
     private var segmenter: PersonSegmenter
     private let inFlight = Locked(false)

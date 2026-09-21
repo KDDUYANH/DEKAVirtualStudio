@@ -91,6 +91,7 @@ targets:
         NSPhotoLibraryUsageDescription: "Choose images or videos to use as virtual backgrounds and logos."
         NSPhotoLibraryAddUsageDescription: "Save files to your photo library."
         NSLocalNetworkUsageDescription: "Used for ultra-low-latency SRT and Dolby video streaming over your local Wi-Fi / LAN."
+        DTEKTokenServiceURL: $(DEKA_TOKEN_SERVICE_URL)
         DEKATokenServiceURL: $(DEKA_TOKEN_SERVICE_URL)
         ITSAppUsesNonExemptEncryption: false
 

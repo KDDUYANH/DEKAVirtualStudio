@@ -157,13 +157,13 @@ struct TransformSettings: Codable, Equatable {
 struct LowerThird: Codable, Equatable {
     var enabled = false
     var title = "Duy Anh Hoàng"
-    var subtitle = "DEKA Virtual Studio"
+    var subtitle = "D-TEK Studio"
     var accent = RGBAColor(r: 0.93, g: 0.26, b: 0.21)
 }
 
 struct TickerSettings: Codable, Equatable {
     var enabled = false
-    var text = "DEKA VIRTUAL STUDIO  •  LIVE FROM IPHONE  •"
+    var text = "D-TEK STUDIO  •  LIVE FROM IPHONE  •"
     var speed: Float = 0.08          // fraction of output width per second
 }
 

@@ -22,7 +22,7 @@ enum KeychainError: LocalizedError, Equatable {
 struct KeychainStore {
     let service: String
 
-    init(service: String = "vn.kdproductions.deka.secure") { self.service = service }
+    init(service: String = "vn.kdproductions.dtek.secure") { self.service = service }
 
     private func base(_ account: String) -> [String: Any] {
         [kSecClass as String: kSecClassGenericPassword,

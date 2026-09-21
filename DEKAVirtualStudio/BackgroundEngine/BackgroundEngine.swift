@@ -23,7 +23,7 @@ final class BackgroundEngine {
 
     private let context: MetalContext
     private let blur: GPUBlur
-    private let loadQueue = DispatchQueue(label: "deka.background.load", qos: .userInitiated)
+    private let loadQueue = DispatchQueue(label: "dtek.background.load", qos: .userInitiated)
     private let loader: MTKTextureLoader
 
     /// key = "<asset>|<blurRadius>"
