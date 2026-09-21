@@ -21,6 +21,7 @@ import { PositionId } from './types.js';
 import { SourceInspector } from './sourceInspector.js';
 import { AdapterManager } from '../adapters/adapterManager.js';
 import { SourceAdapterConfig } from './sourceTypes.js';
+import { InteractiveSourceWindow } from './interactiveSourceWindow.js';
 
 // Core Singletons
 let store: PersistenceStore;
@@ -32,6 +33,7 @@ let positionEngine: PositionEngine;
 let autoMoveSequencer: AutoMoveSequencer;
 let sourceInspector: SourceInspector;
 let adapterManager: AdapterManager;
+let interactiveSource: InteractiveSourceWindow;
 
 let previewWindow: BrowserWindow | null = null;
 let programWindow: BrowserWindow | null = null;
@@ -73,6 +75,7 @@ async function bootstrap() {
   // 7. Initialize Source Discovery Inspector & Adapter Manager
   sourceInspector = new SourceInspector();
   adapterManager = new AdapterManager();
+  interactiveSource = new InteractiveSourceWindow();
 
   // Restore configured sources if any
   if (config.configuredSources && config.configuredSources.length > 0) {
@@ -294,6 +297,48 @@ function wireUpSafetyAndRecovery() {
     }
   });
 
+  // Interactive Source Direct Capture Wiring
+  interactiveSource.on('frame', (frame) => {
+    if (programWindow && !programWindow.isDestroyed()) {
+      programWindow.webContents.send('adapter-frame', frame);
+    }
+    if (previewWindow && !previewWindow.isDestroyed()) {
+      previewWindow.webContents.send('adapter-frame', frame);
+    }
+  });
+
+  interactiveSource.on('opened', () => {
+    safetyGate.updateInputs({ isGameVerified: true, isGameHealthy: true });
+    if (previewWindow && !previewWindow.isDestroyed()) {
+      previewWindow.webContents.send('source-capture-status-changed', { isCapturing: true, isOpen: true });
+    }
+  });
+
+  interactiveSource.on('capture-started', () => {
+    safetyGate.updateInputs({ isGameVerified: true, isGameHealthy: true });
+    if (previewWindow && !previewWindow.isDestroyed()) {
+      previewWindow.webContents.send('source-capture-status-changed', { isCapturing: true, isOpen: true });
+    }
+  });
+
+  interactiveSource.on('capture-stopped', () => {
+    if (previewWindow && !previewWindow.isDestroyed()) {
+      previewWindow.webContents.send('source-capture-status-changed', { isCapturing: false, isOpen: true });
+    }
+  });
+
+  interactiveSource.on('closed', () => {
+    if (previewWindow && !previewWindow.isDestroyed()) {
+      previewWindow.webContents.send('source-capture-status-changed', { isCapturing: false, isOpen: false });
+    }
+  });
+
+  interactiveSource.on('fps', (fps) => {
+    if (previewWindow && !previewWindow.isDestroyed()) {
+      previewWindow.webContents.send('source-capture-fps', fps);
+    }
+  });
+
   // Periodic System Telemetry
   setInterval(() => {
     const mem = process.memoryUsage();
@@ -445,6 +490,28 @@ ipcMain.on('reconnect-adapter', async (_event, id: string) => {
 });
 
 // ============================================================================
+// DIRECT INTERACTIVE SOURCE BROWSER IPC HANDLERS
+// ============================================================================
+ipcMain.on('launch-source-browser', (_event, targetUrl?: string) => {
+  interactiveSource.open(targetUrl || 'https://google.com');
+});
+
+ipcMain.on('toggle-source-capture', () => {
+  if (interactiveSource.getCapturingState()) {
+    interactiveSource.stopCapture();
+  } else {
+    interactiveSource.startCapture();
+  }
+});
+
+ipcMain.handle('get-interactive-source-status', () => {
+  return {
+    isOpen: interactiveSource.isWindowOpen(),
+    isCapturing: interactiveSource.getCapturingState(),
+  };
+});
+
+// ============================================================================
 // LOCAL HTTP DIAGNOSTIC SERVER (PORT 7800 FALLBACK)
 // ============================================================================
 function startLocalHttpServer(port: number) {
@@ -510,6 +577,7 @@ app.on('window-all-closed', () => {
 app.on('before-quit', () => {
   if (ndiController) ndiController.stop();
   if (localHttpServer) localHttpServer.close();
+  if (interactiveSource) interactiveSource.close();
   if (sourceInspector) sourceInspector.destroy();
   if (adapterManager) adapterManager.shutdown();
   if (authManager) authManager.destroy();

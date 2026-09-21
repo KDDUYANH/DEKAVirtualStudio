@@ -52,7 +52,37 @@ const diagReceivers = document.getElementById('diag-receivers');
 const diagUptime = document.getElementById('diag-uptime');
 const diagRam = document.getElementById('diag-ram');
 
-// 4-STEP WIZARD UI ELEMENTS
+// FAST-TRACK DIRECT INTERACTIVE SOURCE CONTROLLER
+const inputDirectSourceUrl = document.getElementById('input-direct-source-url') as HTMLInputElement;
+const btnQuickUrlSet = document.getElementById('btn-quick-url-set');
+const btnLaunchInteractiveBrowser = document.getElementById('btn-launch-interactive-browser');
+const indicatorCaptureDot = document.getElementById('indicator-capture-dot');
+const indicatorCaptureText = document.getElementById('indicator-capture-text');
+const btnToggleCaptureUi = document.getElementById('btn-toggle-capture-ui');
+const btnToggleAdvancedDiscovery = document.getElementById('btn-toggle-advanced-discovery');
+const advancedDiscoveryAccordion = document.getElementById('advanced-discovery-accordion');
+
+btnLaunchInteractiveBrowser?.addEventListener('click', () => {
+  const url = inputDirectSourceUrl?.value?.trim() || 'https://google.com';
+  ipc.send('launch-source-browser', url);
+});
+
+btnQuickUrlSet?.addEventListener('click', () => {
+  const url = inputDirectSourceUrl?.value?.trim() || 'https://google.com';
+  ipc.send('launch-source-browser', url);
+});
+
+btnToggleCaptureUi?.addEventListener('click', () => {
+  ipc.send('toggle-source-capture');
+});
+
+btnToggleAdvancedDiscovery?.addEventListener('click', () => {
+  if (!advancedDiscoveryAccordion) return;
+  const isHidden = advancedDiscoveryAccordion.style.display === 'none';
+  advancedDiscoveryAccordion.style.display = isHidden ? 'flex' : 'none';
+});
+
+// 4-STEP WIZARD UI ELEMENTS (STANDALONE / ACCORDION COMPANION)
 const pillStep1 = document.getElementById('pill-step-1');
 const pillStep2 = document.getElementById('pill-step-2');
 const pillStep3 = document.getElementById('pill-step-3');
@@ -543,6 +573,45 @@ function escapeHtml(str: string): string {
   return String(str).replace(/[&<>'"]/g, 
     tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag));
 }
+
+// Interactive Source Direct Capture Listeners
+ipc.on('source-capture-status-changed', (_e: any, data: any) => {
+  if (indicatorCaptureDot && indicatorCaptureText) {
+    if (data.isCapturing) {
+      indicatorCaptureDot.className = 'status-dot green';
+      indicatorCaptureText.innerText = 'ĐANG BẮT HÌNH TRỰC TIẾP (LIVE PGM)';
+      indicatorCaptureText.style.color = '#10b981';
+      if (btnToggleCaptureUi) btnToggleCaptureUi.innerText = '⏸ TẠM DỪNG BẮT HÌNH';
+    } else if (data.isOpen) {
+      indicatorCaptureDot.className = 'status-dot amber';
+      indicatorCaptureText.innerText = 'TRÌNH DUYỆT MỞ — TẠM DỪNG BẮT HÌNH';
+      indicatorCaptureText.style.color = '#f59e0b';
+      if (btnToggleCaptureUi) btnToggleCaptureUi.innerText = '▶ TIẾP TỤC BẮT HÌNH';
+    } else {
+      indicatorCaptureDot.className = 'status-dot red';
+      indicatorCaptureText.innerText = 'CHƯA MỞ TRÌNH DUYỆT NGUỒN';
+      indicatorCaptureText.style.color = '#ef4444';
+      if (btnToggleCaptureUi) btnToggleCaptureUi.innerText = '⏸ TẠM DỪNG BẮT HÌNH';
+    }
+  }
+
+  if (labelGame && dotGame) {
+    if (data.isCapturing) {
+      dotGame.className = 'status-dot green';
+      labelGame.innerText = 'GAME: LIVE 60FPS';
+    } else if (data.isOpen) {
+      dotGame.className = 'status-dot amber';
+      labelGame.innerText = 'GAME: PAUSED';
+    } else {
+      dotGame.className = 'status-dot red';
+      labelGame.innerText = 'GAME: NO SOURCE';
+    }
+  }
+});
+
+ipc.on('source-capture-fps', (_e: any, fps: number) => {
+  if (diagFps) diagFps.innerText = `${fps.toFixed(1)}`;
+});
 
 // Initial source load
 loadConfiguredSources();

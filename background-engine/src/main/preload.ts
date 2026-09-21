@@ -20,6 +20,8 @@ contextBridge.exposeInMainWorld('electronIpc', {
       'add-source-adapter',
       'remove-source-adapter',
       'reconnect-adapter',
+      'launch-source-browser',
+      'toggle-source-capture',
     ];
     if (validChannels.includes(channel)) {
       ipcRenderer.send(channel, data);
@@ -33,6 +35,7 @@ contextBridge.exposeInMainWorld('electronIpc', {
       'add-source-adapter',
       'remove-source-adapter',
       'get-configured-sources',
+      'get-interactive-source-status',
     ];
     if (validChannels.includes(channel)) {
       return await ipcRenderer.invoke(channel, data);
@@ -58,6 +61,8 @@ contextBridge.exposeInMainWorld('electronIpc', {
       'adapter-game-state',
       'adapter-chat-message',
       'configured-sources-changed',
+      'source-capture-status-changed',
+      'source-capture-fps',
     ];
     if (validChannels.includes(channel)) {
       ipcRenderer.on(channel, (_event, ...args) => callback(_event, ...args));
