@@ -114,6 +114,7 @@ struct AudioPanel: View {
 
 struct OutputPanel: View {
     @Environment(StudioController.self) private var studio
+    @State private var showStreamKey = false
 
     var body: some View {
         let s = studio.telemetry.stream
@@ -134,7 +135,8 @@ struct OutputPanel: View {
                 Pills(options: StreamDestination.allCases, selection: studio.outputBinding(\.destination)) { $0.rawValue }
             }
 
-            if studio.project.output.destination == .srtServer {
+            switch studio.project.output.destination {
+            case .srtServer:
                 PanelSection(title: "SRT SERVER SETTINGS") {
                     HStack(spacing: 6) {
                         TextField("Host / IP", text: studio.outputBinding(\.srtHost))
@@ -150,12 +152,69 @@ struct OutputPanel: View {
                                 range: 50...1000, neutral: 200, format: "%.0f ms")
                     SecureField("Passphrase (optional)", text: studio.outputBinding(\.srtPassphrase))
                         .textFieldStyle(.roundedBorder)
-                    Text(studio.project.output.srtPublishURLString)
+                    Text(studio.project.output.publishURLString)
                         .font(.system(size: 9, design: .monospaced))
                         .foregroundStyle(Theme.dim)
                         .lineLimit(2)
                 }
-            } else {
+            case .rtmpServer:
+                PanelSection(title: "RTMP LIVE STREAM (YOUTUBE / TIKTOK / FB)") {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("PLATFORM PRESETS").font(Theme.label).foregroundStyle(Theme.dim)
+                        HStack(spacing: 4) {
+                            Button("YouTube") {
+                                studio.outputBinding(\.rtmpURL).wrappedValue = "rtmp://a.rtmp.youtube.com/live2"
+                            }.font(.system(size: 10, weight: .semibold))
+                            .padding(.horizontal, 8).padding(.vertical, 5)
+                            .background(Theme.panelRaised).clipShape(RoundedRectangle(cornerRadius: 5))
+
+                            Button("TikTok") {
+                                studio.outputBinding(\.rtmpURL).wrappedValue = "rtmp://live-push.tiktok.com/live/"
+                            }.font(.system(size: 10, weight: .semibold))
+                            .padding(.horizontal, 8).padding(.vertical, 5)
+                            .background(Theme.panelRaised).clipShape(RoundedRectangle(cornerRadius: 5))
+
+                            Button("Facebook") {
+                                studio.outputBinding(\.rtmpURL).wrappedValue = "rtmps://live-api-s.facebook.com:443/rtmp/"
+                            }.font(.system(size: 10, weight: .semibold))
+                            .padding(.horizontal, 8).padding(.vertical, 5)
+                            .background(Theme.panelRaised).clipShape(RoundedRectangle(cornerRadius: 5))
+
+                            Button("Twitch") {
+                                studio.outputBinding(\.rtmpURL).wrappedValue = "rtmp://live.twitch.tv/app/"
+                            }.font(.system(size: 10, weight: .semibold))
+                            .padding(.horizontal, 8).padding(.vertical, 5)
+                            .background(Theme.panelRaised).clipShape(RoundedRectangle(cornerRadius: 5))
+                        }
+                    }
+                    TextField("Server Ingest URL (rtmp:// or rtmps://)", text: studio.outputBinding(\.rtmpURL))
+                        .textFieldStyle(.roundedBorder).textInputAutocapitalization(.never).autocorrectionDisabled()
+
+                    HStack(spacing: 6) {
+                        if showStreamKey {
+                            TextField("Stream Key", text: studio.outputBinding(\.rtmpStreamKey))
+                                .textFieldStyle(.roundedBorder).textInputAutocapitalization(.never).autocorrectionDisabled()
+                        } else {
+                            SecureField("Stream Key", text: studio.outputBinding(\.rtmpStreamKey))
+                                .textFieldStyle(.roundedBorder)
+                        }
+                        Button {
+                            showStreamKey.toggle()
+                        } label: {
+                            Image(systemName: showStreamKey ? "eye.slash.fill" : "eye.fill")
+                                .font(.system(size: 12))
+                                .padding(8)
+                                .background(Theme.panelRaised)
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                        }.buttonStyle(.plain)
+                    }
+
+                    Text("Target: \(studio.project.output.publishURLString)")
+                        .font(.system(size: 9, design: .monospaced))
+                        .foregroundStyle(Theme.dim)
+                        .lineLimit(2)
+                }
+            case .dolbyMillicast:
                 PanelSection(title: "DOLBY OPTIVIEW (MILLICAST)") {
                     HStack(spacing: 6) {
                         TextField("Dolby Ingest", text: studio.outputBinding(\.dolbyEndpoint))
@@ -171,7 +230,7 @@ struct OutputPanel: View {
                                 value: Binding(get: { Float(studio.project.output.srtLatencyMs) },
                                                set: { v in studio.outputBinding(\.srtLatencyMs).wrappedValue = Int(v) }),
                                 range: 50...1000, neutral: 200, format: "%.0f ms")
-                    Text(studio.project.output.srtPublishURLString)
+                    Text(studio.project.output.publishURLString)
                         .font(.system(size: 9, design: .monospaced))
                         .foregroundStyle(Theme.dim)
                         .lineLimit(2)

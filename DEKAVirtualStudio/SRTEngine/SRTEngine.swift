@@ -33,6 +33,10 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
     // SRT Output Objects (Publishing)
     private var publishConnection: SRTConnection?
     private var publishStream: SRTStream?
+
+    // RTMP Output Objects (Publishing)
+    private var rtmpConnection: RTMPConnection?
+    private var rtmpStream: RTMPStream?
     private let isPublishing = Locked(false)
 
     // SRT Input Objects (Return Program Feed)
@@ -63,7 +67,7 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
         self.returnView.videoGravity = .resizeAspectFill
     }
 
-    // MARK: - SRT Output (Publishing)
+    // MARK: - Output (Publishing SRT & RTMP)
 
     func start(configuration: StreamConfiguration) async throws {
         userStopped = false
@@ -71,7 +75,9 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
         reconnectTask = nil
         self.configuration = configuration
         setState(.connecting)
-        onEvent?("Connecting to SRT: \(configuration.srtPublishURL)")
+        let isRTMP = configuration.srtPublishURL.lowercased().hasPrefix("rtmp://") || configuration.srtPublishURL.lowercased().hasPrefix("rtmps://")
+        let proto = isRTMP ? "RTMP" : "SRT"
+        onEvent?("Connecting to \(proto): \(configuration.srtPublishURL)")
 
         do {
             try await connectAndPublish(configuration)
@@ -79,7 +85,7 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
             userStopped = true
             await teardownPublish()
             setState(.failed(error.localizedDescription))
-            onEvent?("SRT connection failed: \(error.localizedDescription)")
+            onEvent?("\(proto) connection failed: \(error.localizedDescription)")
             throw error
         }
     }
@@ -91,18 +97,15 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
         await teardownPublish()
         await stopReturnFeed()
         setState(.off)
-        onEvent?("SRT stream stopped.")
+        onEvent?("Stream stopped.")
     }
 
     private func connectAndPublish(_ cfg: StreamConfiguration) async throws {
         guard let url = URL(string: cfg.srtPublishURL) else {
-            throw NSError(domain: "DTEK.SRT", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid SRT URL: \(cfg.srtPublishURL)"])
+            throw NSError(domain: "DTEK.Stream", code: 400, userInfo: [NSLocalizedDescriptionKey: "Invalid Stream URL: \(cfg.srtPublishURL)"])
         }
 
-        let connection = SRTConnection()
-        self.publishConnection = connection
-        let stream = SRTStream(connection: connection)
-        self.publishStream = stream
+        let isRTMP = (url.scheme?.lowercased() == "rtmp" || url.scheme?.lowercased() == "rtmps")
 
         // Configure Video Encoding (Hardware VideoToolbox)
         let isHEVC = cfg.videoCodec.lowercased() == "hevc"
@@ -118,22 +121,45 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
             isHardwareAcceleratedEnabled: true,
             expectedFrameRate: Double(cfg.fps)
         )
-        try? await stream.setVideoSettings(videoSettings)
 
         // Configure Audio Encoding (AAC 128kbps)
         let audioSettings = AudioCodecSettings(
             bitRate: cfg.audioBitrateKbps * 1000,
             format: .aac
         )
-        try? await stream.setAudioSettings(audioSettings)
 
-        // Connect over network
-        try await connection.connect(url)
-        await stream.publish()
+        if isRTMP {
+            let connection = RTMPConnection()
+            self.rtmpConnection = connection
+            let stream = RTMPStream(connection: connection)
+            self.rtmpStream = stream
 
-        isPublishing.set(true)
-        setState(.live)
-        onEvent?("SRT LIVE on air: \(url.host ?? ""):\(url.port ?? 9000)")
+            try? await stream.setVideoSettings(videoSettings)
+            try? await stream.setAudioSettings(audioSettings)
+
+            let _ = try await connection.connect(cfg.srtPublishURL)
+            let streamKey = cfg.streamKey.trimmingCharacters(in: .whitespacesAndNewlines)
+            await stream.publish(streamKey.isEmpty ? nil : streamKey)
+
+            isPublishing.set(true)
+            setState(.live)
+            onEvent?("RTMP LIVE on air: \(url.host ?? "")")
+        } else {
+            let connection = SRTConnection()
+            self.publishConnection = connection
+            let stream = SRTStream(connection: connection)
+            self.publishStream = stream
+
+            try? await stream.setVideoSettings(videoSettings)
+            try? await stream.setAudioSettings(audioSettings)
+
+            try await connection.connect(url)
+            await stream.publish()
+
+            isPublishing.set(true)
+            setState(.live)
+            onEvent?("SRT LIVE on air: \(url.host ?? ""):\(url.port ?? 9000)")
+        }
 
         // Start performance stats monitor
         startStatsMonitor()
@@ -161,6 +187,16 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
             await conn.close()
         }
         publishConnection = nil
+
+        if let stream = rtmpStream {
+            await stream.close()
+        }
+        rtmpStream = nil
+
+        if let conn = rtmpConnection {
+            await conn.close()
+        }
+        rtmpConnection = nil
     }
 
     // MARK: - Auto-Reconnect
@@ -242,7 +278,7 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
 
     /// MASTER video (delivered from Compositor: NV12 CVPixelBuffer).
     func consume(master: MasterFrame) {
-        guard gate.allowsUpload, isPublishing.get(), let stream = publishStream else { return }
+        guard gate.allowsUpload, isPublishing.get(), (publishStream != nil || rtmpStream != nil) else { return }
 
         // Backpressure check: if previous frame is still encoding, drop this frame unless timed out (>0.5s)
         let now = hostTimeSeconds()
@@ -287,13 +323,17 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
             return
         }
 
-        streamQueue.async { [weak self, weak stream] in
-            guard let self, let stream, self.isPublishing.get() else {
+        streamQueue.async { [weak self] in
+            guard let self, self.isPublishing.get() else {
                 self?.isEncodingFrame.set(false)
                 return
             }
             Task {
-                await stream.append(sampleBuffer)
+                if let stream = self.publishStream {
+                    await stream.append(sampleBuffer)
+                } else if let stream = self.rtmpStream {
+                    await stream.append(sampleBuffer)
+                }
                 self.isEncodingFrame.set(false)
             }
         }
@@ -301,7 +341,7 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
 
     /// Audio PCM chunk (16-bit interleaved)
     func consume(audio: AudioChunk) {
-        guard gate.allowsUpload, isPublishing.get(), let stream = publishStream else { return }
+        guard gate.allowsUpload, isPublishing.get(), (publishStream != nil || rtmpStream != nil) else { return }
 
         if audioFormat == nil || lastSampleRate != audio.sampleRate || lastChannels != audio.channels {
             lastSampleRate = audio.sampleRate
@@ -326,15 +366,19 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
         }
         let time = AVAudioTime(hostTime: mach_absolute_time())
 
-        streamQueue.async { [weak self, weak stream] in
-            guard let self, let stream, self.isPublishing.get() else { return }
+        streamQueue.async { [weak self] in
+            guard let self, self.isPublishing.get() else { return }
             Task {
-                await stream.append(pcm, when: time)
+                if let stream = self.publishStream {
+                    await stream.append(pcm, when: time)
+                } else if let stream = self.rtmpStream {
+                    await stream.append(pcm, when: time)
+                }
             }
         }
     }
 
-    // MARK: - SRT Telemetry & Monitoring
+    // MARK: - Telemetry & Monitoring
 
     private func startStatsMonitor() {
         statsTask?.cancel()
@@ -342,24 +386,44 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
             while !Task.isCancelled {
                 try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
                 guard let self else { break }
-                guard let conn = self.publishConnection else { continue }
-                let isConn = await conn.connected
-                if !isConn {
-                    if self.isPublishing.get() && !self.userStopped {
-                        self.handleDisconnect()
-                    }
-                    continue
-                }
 
-                if let perf = await conn.performanceData {
-                    var s = self.statsBox.get()
-                    s.rttMs = perf.msRTT
-                    s.videoBitrateKbps = perf.mbpsSendRate * 1000
-                    s.availableOutgoingKbps = perf.mbpsBandwidth * 1000
-                    let totalPackets = perf.pktSent + Int64(perf.pktSndLoss)
-                    if totalPackets > 0 {
-                        s.packetLossPercent = (Double(perf.pktSndLoss) / Double(totalPackets)) * 100.0
+                if let conn = self.publishConnection {
+                    let isConn = await conn.connected
+                    if !isConn {
+                        if self.isPublishing.get() && !self.userStopped {
+                            self.handleDisconnect()
+                        }
+                        continue
                     }
+
+                    if let perf = await conn.performanceData {
+                        var s = self.statsBox.get()
+                        s.rttMs = perf.msRTT
+                        s.videoBitrateKbps = perf.mbpsSendRate * 1000
+                        s.availableOutgoingKbps = perf.mbpsBandwidth * 1000
+                        let totalPackets = perf.pktSent + Int64(perf.pktSndLoss)
+                        if totalPackets > 0 {
+                            s.packetLossPercent = (Double(perf.pktSndLoss) / Double(totalPackets)) * 100.0
+                        }
+                        s.connectionState = "connected"
+                        self.statsBox.set(s)
+                        let cb = self.onStats
+                        DispatchQueue.main.async { cb?(s) }
+                    }
+                } else if let conn = self.rtmpConnection {
+                    let isConn = await conn.connected
+                    if !isConn {
+                        if self.isPublishing.get() && !self.userStopped {
+                            self.handleDisconnect()
+                        }
+                        continue
+                    }
+
+                    var s = self.statsBox.get()
+                    s.rttMs = 0
+                    s.videoBitrateKbps = Double(self.configuration?.videoBitrateKbps ?? 4000)
+                    s.availableOutgoingKbps = Double(self.configuration?.videoBitrateKbps ?? 4000)
+                    s.packetLossPercent = 0
                     s.connectionState = "connected"
                     self.statsBox.set(s)
                     let cb = self.onStats

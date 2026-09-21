@@ -94,7 +94,7 @@ Services:
   - Backend Node.js server (port 3000)
   - React frontend (port 3001)
   - PostgreSQL database (local)
-Access: http://35.235.240.16:3001
+Access: http://YOUR_VM_IP:3001
 Cost: ~$25/month
 
 PRODUCTION (On Cloud Run)
@@ -179,7 +179,7 @@ Database:
 
 Development VM:
   Name: mediamtx-dashboard
-  IP: 35.235.240.16
+  IP: YOUR_DEV_VM_IP
   Zone: us-central1-a
   
 Production Services:

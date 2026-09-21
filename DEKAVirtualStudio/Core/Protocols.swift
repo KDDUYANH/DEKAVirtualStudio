@@ -91,4 +91,5 @@ struct StreamConfiguration: Equatable {
     var streamName: String
     var srtPublishURL: String = ""
     var srtReturnURL: String? = nil
+    var streamKey: String = ""
 }

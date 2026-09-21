@@ -15,7 +15,7 @@ echo "╔═══════════════════════�
 echo "║  🎬 DEKA LIVE DASHBOARD - Complete Deployment                 ║"
 echo "║                                                                ║"
 echo "║  This will setup:                                              ║"
-echo "║  1. Development VM (35.235.240.16) - Docker Compose            ║"
+echo "║  1. Development VM (YOUR_DEV_VM_IP) - Docker Compose           ║"
 echo "║  2. Production (Cloud Run) - Auto-scaling                      ║"
 echo "║  3. Database (Cloud SQL) - PostgreSQL 15                       ║"
 echo "║                                                                ║"

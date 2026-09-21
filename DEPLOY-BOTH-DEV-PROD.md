@@ -10,7 +10,7 @@
 ```
 Compute Engine: e2-medium Ubuntu 22.04
 Docker Compose: Backend + Frontend + PostgreSQL
-Access: http://35.235.240.16:3001 (local dev)
+Access: http://YOUR_VM_IP:3001 (dev)
 Purpose: Test & iterate before production
 ```
 

@@ -156,7 +156,7 @@ struct TransformSettings: Codable, Equatable {
 
 struct LowerThird: Codable, Equatable {
     var enabled = false
-    var title = "Duy Anh Hoàng"
+    var title = "Live Presenter"
     var subtitle = "D-TEK Studio"
     var accent = RGBAColor(r: 0.93, g: 0.26, b: 0.21)
 }
@@ -220,6 +220,7 @@ struct SceneModel: Codable, Equatable, Identifiable {
 
 enum StreamDestination: String, Codable, CaseIterable, Identifiable {
     case srtServer = "SRT SERVER"
+    case rtmpServer = "RTMP / LIVE STREAM"
     case dolbyMillicast = "DOLBY MILLICAST"
     var id: String { rawValue }
 }
@@ -251,7 +252,7 @@ struct OutputSettings: Codable, Equatable {
     var transitionDuration: Double = 0.5
     var cleanFeedLiveOutput: Bool = false
 
-    // Destination selector: SRT Server or Dolby OptiView (Millicast)
+    // Destination selector: SRT Server, RTMP, or Dolby OptiView (Millicast)
     var destination: StreamDestination = .srtServer
 
     // SRT Server Settings (Publishing to MediaMTX / vMix / OBS)
@@ -260,6 +261,10 @@ struct OutputSettings: Codable, Equatable {
     var srtStreamId: String = "publish:cam1"
     var srtLatencyMs: Int = 200
     var srtPassphrase: String = ""
+
+    // RTMP Server Settings (YouTube, TikTok, Facebook, Twitch, Custom RTMP)
+    var rtmpURL: String = "rtmp://a.rtmp.youtube.com/live2"
+    var rtmpStreamKey: String = ""
 
     // Dolby OptiView (Millicast) Settings
     var dolbyEndpoint: String = "live-srt.millicast.com"
@@ -273,7 +278,7 @@ struct OutputSettings: Codable, Equatable {
     var srtReturnPort: Int = 9000
     var srtReturnStreamId: String = "read:program"
 
-    var srtPublishURLString: String {
+    var publishURLString: String {
         switch destination {
         case .srtServer:
             let host = srtHost.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -282,6 +287,9 @@ struct OutputSettings: Codable, Equatable {
             if !streamId.isEmpty { s += "&streamid=\(streamId)" }
             if !srtPassphrase.isEmpty { s += "&passphrase=\(srtPassphrase)" }
             return s
+        case .rtmpServer:
+            let u = rtmpURL.trimmingCharacters(in: .whitespacesAndNewlines)
+            return u.isEmpty ? "rtmp://a.rtmp.youtube.com/live2" : u
         case .dolbyMillicast:
             let endpoint = dolbyEndpoint.trimmingCharacters(in: .whitespacesAndNewlines)
             let streamName = dolbyStreamName.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -291,6 +299,21 @@ struct OutputSettings: Codable, Equatable {
             if !token.isEmpty { s += "&passphrase=\(token)" }
             return s
         }
+    }
+
+    var publishStreamKey: String {
+        switch destination {
+        case .rtmpServer:
+            return rtmpStreamKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        case .srtServer:
+            return srtStreamId.trimmingCharacters(in: .whitespacesAndNewlines)
+        case .dolbyMillicast:
+            return dolbyStreamName.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+    }
+
+    var srtPublishURLString: String {
+        publishURLString
     }
 
     var srtReturnURLString: String {
@@ -303,9 +326,13 @@ struct OutputSettings: Codable, Equatable {
         return s
     }
 
-    var srtPublishURL: String? {
-        let s = srtPublishURLString
+    var publishURL: String? {
+        let s = publishURLString
         return s.isEmpty ? nil : s
+    }
+
+    var srtPublishURL: String? {
+        publishURL
     }
 
     var srtReturnURL: String? {

@@ -33,15 +33,15 @@ final class Locked<Value>: @unchecked Sendable {
 }
 
 enum Log {
-    static let camera   = Logger(subsystem: "vn.kdproductions.dtek", category: "camera")
-    static let metal    = Logger(subsystem: "vn.kdproductions.dtek", category: "metal")
-    static let pipeline = Logger(subsystem: "vn.kdproductions.dtek", category: "pipeline")
-    static let ai       = Logger(subsystem: "vn.kdproductions.dtek", category: "ai")
-    static let audio    = Logger(subsystem: "vn.kdproductions.dtek", category: "audio")
-    static let stream   = Logger(subsystem: "vn.kdproductions.dtek", category: "stream")
-    static let record   = Logger(subsystem: "vn.kdproductions.dtek", category: "record")
-    static let security = Logger(subsystem: "vn.kdproductions.dtek", category: "security")
-    static let project  = Logger(subsystem: "vn.kdproductions.dtek", category: "project")
+    static let camera   = Logger(subsystem: "com.dtek.studio", category: "camera")
+    static let metal    = Logger(subsystem: "com.dtek.studio", category: "metal")
+    static let pipeline = Logger(subsystem: "com.dtek.studio", category: "pipeline")
+    static let ai       = Logger(subsystem: "com.dtek.studio", category: "ai")
+    static let audio    = Logger(subsystem: "com.dtek.studio", category: "audio")
+    static let stream   = Logger(subsystem: "com.dtek.studio", category: "stream")
+    static let record   = Logger(subsystem: "com.dtek.studio", category: "record")
+    static let security = Logger(subsystem: "com.dtek.studio", category: "security")
+    static let project  = Logger(subsystem: "com.dtek.studio", category: "project")
 }
 
 /// Monotonic host time in seconds (same clock as AVCaptureSession / AVAudioTime host time).

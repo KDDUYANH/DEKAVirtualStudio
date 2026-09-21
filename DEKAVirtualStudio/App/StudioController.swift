@@ -387,8 +387,8 @@ final class StudioController {
 
     func goLive() async {
         guard !streamState.isOnAir, let compositor else { return }
-        guard let publishURL = project.output.srtPublishURL else {
-            post("Invalid SRT host or port. Configure SRT Output in OUTPUT panel.")
+        guard let publishURL = project.output.publishURL else {
+            post("Invalid streaming destination. Configure in OUTPUT panel.")
             return
         }
         let returnURL = project.output.srtReturnURL
@@ -397,9 +397,10 @@ final class StudioController {
                                       minVideoBitrateKbps: project.output.minVideoBitrateKbps,
                                       audioBitrateKbps: project.output.audioBitrateKbps,
                                       videoCodec: project.output.videoCodec,
-                                      streamName: project.output.srtStreamId,
+                                      streamName: project.output.publishStreamKey,
                                       srtPublishURL: publishURL,
-                                      srtReturnURL: returnURL)
+                                      srtReturnURL: returnURL,
+                                      streamKey: project.output.publishStreamKey)
         // Open the gate and attach the publisher ONLY now — the explicit operator action.
         gate.openForStreaming()
         compositor.addSink(publisher)

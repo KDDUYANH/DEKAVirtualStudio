@@ -42,4 +42,4 @@ Thiết bị: iPhone __ (chip A__), iOS __._  · App build: ____ · Ngày: ____ 
 
 * **Instruments → Metal System Trace**: thời gian từng pass (Prepare, Composite, Pack NV12, Preview).
 * **Instruments → Thermal State + Energy Log**: chạy cùng lúc với bài 9.
-* **Console.app**, lọc subsystem `vn.kdproductions.deka`: log của camera, pipeline, ai, stream, security.
+* **Console.app**, lọc subsystem `com.dtek.studio`: log của camera, pipeline, ai, stream, security.

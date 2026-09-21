@@ -25,6 +25,9 @@ final class ProjectManagerTests: XCTestCase {
         p.output.srtReturnEnabled = true
         p.output.srtReturnStreamId = "read:test"
         p.output.cleanFeedLiveOutput = true
+        p.output.destination = .rtmpServer
+        p.output.rtmpURL = "rtmp://a.rtmp.youtube.com/live2"
+        p.output.rtmpStreamKey = "secret-stream-key"
         try pm.save(p)
         let loaded = try pm.load(id: p.id)
         XCTAssertEqual(loaded.scenes[0].color.exposure, 0.7)
@@ -36,6 +39,11 @@ final class ProjectManagerTests: XCTestCase {
         XCTAssertEqual(loaded.output.srtReturnEnabled, true)
         XCTAssertEqual(loaded.output.srtReturnStreamId, "read:test")
         XCTAssertEqual(loaded.output.cleanFeedLiveOutput, true)
+        XCTAssertEqual(loaded.output.destination, .rtmpServer)
+        XCTAssertEqual(loaded.output.rtmpURL, "rtmp://a.rtmp.youtube.com/live2")
+        XCTAssertEqual(loaded.output.rtmpStreamKey, "secret-stream-key")
+        XCTAssertEqual(loaded.output.publishURLString, "rtmp://a.rtmp.youtube.com/live2")
+        XCTAssertEqual(loaded.output.publishStreamKey, "secret-stream-key")
         XCTAssertEqual(pm.list().count, 1)
     }
 
@@ -62,7 +70,7 @@ final class ProjectManagerTests: XCTestCase {
 
 final class KeychainTests: XCTestCase {
     func testSetGetDelete() throws {
-        let k = KeychainStore(service: "vn.kdproductions.dtek.tests.\(UUID().uuidString)")
+        let k = KeychainStore(service: "com.dtek.studio.tests.\(UUID().uuidString)")
         try k.setString("secret", for: "a")
         XCTAssertEqual(k.string(for: "a"), "secret")
         try k.setString("rotated", for: "a")                    // update path
