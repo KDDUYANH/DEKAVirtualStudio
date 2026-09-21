@@ -11,8 +11,8 @@
     "dev": "vite",
     "build:ndi": "dotnet publish src/ndi/NdiBridge.csproj -c Release -r win-x64 --self-contained false -o bin/ndi",
     "build:ts": "tsc -p tsconfig.json",
-    "build:vite": "vite build",
-    "build": "npm run build:ndi && npm run build:ts && npm run build:vite",
+    "build:copy": "powershell -Command \"Copy-Item -Force src/preview/*.html,src/preview/*.css dist/preview; Copy-Item -Force src/program/*.html,src/program/*.css dist/program\"",
+    "build": "npm run build:ndi && npm run build:ts && npm run build:copy",
     "start": "electron dist/main/main.js",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
@@ -24,6 +24,8 @@
   "devDependencies": {
     "@types/node": "^20.14.9",
     "@types/ws": "^8.5.10",
+    "7zip-bin": "^5.2.0",
+    "app-builder-bin": "^4.0.0",
     "electron": "^31.1.0",
     "electron-builder": "^24.13.3",
     "typescript": "^5.5.3",
@@ -32,6 +34,9 @@
   "build": {
     "appId": "com.deka.backgroundengine",
     "productName": "Background Engine",
+    "directories": {
+      "output": "release"
+    },
     "win": {
       "target": [
         "nsis",
@@ -40,17 +45,26 @@
       "icon": "public/icon.ico"
     },
     "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true,
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
       "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
       "artifactName": "BackgroundEngine-Setup.${ext}"
     },
     "files": [
       "dist/**/*",
-      "bin/ndi/**/*",
       "public/**/*",
       "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "bin/ndi",
+        "to": "bin/ndi",
+        "filter": [
+          "**/*"
+        ]
+      }
     ]
   }
 }
