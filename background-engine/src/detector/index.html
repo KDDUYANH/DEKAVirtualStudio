@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DEKA Source Detector — Phân Tích & Bắt Nguồn Trực Tiếp</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header>
+    <div class="brand-group">
+      <div class="brand-name">DEKA SOURCE DETECTOR</div>
+      <div class="brand-tag">DEEP ANALYZER v2.0</div>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <span id="sessionStatus" class="badge badge-gray">CHƯA KẾT NỐI PHIÊN</span>
+      <span class="badge badge-blue">STANDALONE TOOLKIT</span>
+    </div>
+  </header>
+
+  <div class="top-bar">
+    <input type="text" id="urlInput" class="url-input" placeholder="Nhập URL sàn đấu / web game / trang stream cần phân tích..." value="https://example.com">
+    <button id="btnScan" class="btn btn-primary">
+      <span>🔍</span> QUÉT SÂU GIAO THỨC
+    </button>
+    <button id="btnOpenBrowser" class="btn btn-secondary">
+      <span>🌐</span> MỞ TRÌNH DUYỆT ĐĂNG NHẬP
+    </button>
+    <button id="btnCheckCookies" class="btn btn-secondary">
+      <span>🍪</span> KIỂM TRA PHIÊN & AUTH
+    </button>
+  </div>
+
+  <div class="main-layout">
+    <!-- CỘT TRÁI: DANH SÁCH THÀNH PHẦN & TERMINAL -->
+    <div class="panel-col">
+      <div class="panel-box" style="flex: 1.2;">
+        <div class="panel-head">
+          <span>DANH SÁCH NGUỒN PHÁT HIỆN (DETECTED CANDIDATES)</span>
+          <span id="candidateCountBadge" class="badge badge-gray">0 MỤC</span>
+        </div>
+        <div id="candidatesList" class="candidates-list">
+          <div style="padding: 24px; text-align: center; color: var(--text-muted); font-size: 12px;">
+            Chưa có kết quả quét. Hãy nhập URL và nhấn <b>QUÉT SÂU GIAO THỨC</b> hoặc mở trình duyệt để đăng nhập.
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-box" style="flex: 1;">
+        <div class="panel-head">
+          <span>NHẬT KÝ BẮT GÓI & GIAO THỨC (SNIFFER LOG)</span>
+          <button id="btnClearLog" style="background:none; border:none; color:var(--text-muted); font-size:11px; cursor:pointer;">Xóa log</button>
+        </div>
+        <div id="logTerminal" class="log-terminal">
+          [SYSTEM] DEKA Source Detector khởi động sẵn sàng.<br>
+          [SNIFFER] Chế độ giám sát gói tin DOM / WebSocket / WebRTC / Canvas active.
+        </div>
+      </div>
+    </div>
+
+    <!-- CỘT PHẢI: XEM TRƯỚC, THÔNG SỐ & XUẤT ADAPTER -->
+    <div class="panel-col">
+      <div class="panel-box">
+        <div class="panel-head">
+          <span>XEM TRƯỚC TRỰC TIẾP & ĐỘ TRỄ (TELEMETRY)</span>
+          <span id="previewTag" class="badge badge-green">LIVE PREVIEW</span>
+        </div>
+        <div id="previewScreen" class="preview-screen">
+          <div id="previewPlaceholder" style="color: var(--text-muted); font-size: 12px; text-align: center;">
+            Chọn một thành phần bên trái để xem trước & phân tích luồng.
+          </div>
+        </div>
+        <div class="telemetry-row">
+          <div class="tele-box">
+            <div class="tele-label">LOẠI NGUỒN</div>
+            <div id="teleType" class="tele-val">---</div>
+          </div>
+          <div class="tele-box">
+            <div class="tele-label">ĐỘ TRỄ ƯỚC TÍNH</div>
+            <div id="teleLatency" class="tele-val">--- ms</div>
+          </div>
+          <div class="tele-box">
+            <div class="tele-label">ĐỘ TIN CẬY</div>
+            <div id="teleConfidence" class="tele-val">--%</div>
+          </div>
+          <div class="tele-box">
+            <div class="tele-label">KHUYẾN NGHỊ</div>
+            <div id="teleRec" class="tele-val">---</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-box" style="flex: 1;">
+        <div class="panel-head">
+          <span>CẤU HÌNH ADAPTER ĐƯỢC CHỌN</span>
+          <span class="badge badge-blue">AUTO ADAPTER</span>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 10px; font-size: 12px;">
+          <div>
+            <div style="color: var(--text-muted); margin-bottom: 4px; font-size: 11px;">MÃ ĐỊNH DANH (ID):</div>
+            <input type="text" id="adapterId" class="url-input" style="padding: 6px 10px;" value="source-detected-1">
+          </div>
+          <div>
+            <div style="color: var(--text-muted); margin-bottom: 4px; font-size: 11px;">TÊN HIỂN THỊ NGUỒN:</div>
+            <input type="text" id="adapterName" class="url-input" style="padding: 6px 10px;" value="Nguồn Game Phát Hiện">
+          </div>
+          <div>
+            <div style="color: var(--text-muted); margin-bottom: 4px; font-size: 11px;">SELECTOR / ENDPOINT:</div>
+            <input type="text" id="adapterTarget" class="url-input" style="padding: 6px 10px;" value="canvas, video, .game-viewport">
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div>
+              <div style="color: var(--text-muted); margin-bottom: 4px; font-size: 11px;">KIỂU ADAPTER:</div>
+              <select id="adapterKind" class="url-input" style="padding: 6px 10px; width: 100%;">
+                <option value="BROWSER_CAPTURE">Browser Window Capture</option>
+                <option value="WEBSOCKET_DATA">WebSocket Direct Bridge</option>
+                <option value="STREAM_RELAY">Stream Direct Relay</option>
+              </select>
+            </div>
+            <div>
+              <div style="color: var(--text-muted); margin-bottom: 4px; font-size: 11px;">VỊ TRÍ MẶC ĐỊNH (P1-P3):</div>
+              <select id="adapterPos" class="url-input" style="padding: 6px 10px; width: 100%;">
+                <option value="P1">P1 (Cầu 1 - Trái)</option>
+                <option value="P2">P2 (Cầu 2 - Giữa)</option>
+                <option value="P3">P3 (Cầu 3 - Phải)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px;">
+          <button id="btnExportAdapter" class="btn btn-primary" style="justify-content: center; padding: 12px; font-size: 13px;">
+            🚀 XUẤT ADAPTER VÀO BACKGROUND ENGINE
+          </button>
+          <div id="exportStatus" style="font-size: 11px; text-align: center; color: var(--green); min-height: 16px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="detectorApp.js"></script>
+</body>
+</html>
