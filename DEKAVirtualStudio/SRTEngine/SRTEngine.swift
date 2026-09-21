@@ -140,7 +140,7 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
 
             let _ = try await connection.connect(cfg.srtPublishURL)
             let streamKey = cfg.streamKey.trimmingCharacters(in: .whitespacesAndNewlines)
-            await stream.publish(streamKey.isEmpty ? nil : streamKey)
+            try await stream.publish(streamKey.isEmpty ? nil : streamKey)
 
             isPublishing.set(true)
             setState(.live)
@@ -190,12 +190,12 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
         publishConnection = nil
 
         if let stream = rtmpStream {
-            await stream.close()
+            try? await stream.close()
         }
         rtmpStream = nil
 
         if let conn = rtmpConnection {
-            await conn.close()
+            try? await conn.close()
         }
         rtmpConnection = nil
     }
