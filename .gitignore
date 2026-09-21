@@ -1,4 +1,4 @@
-# Xcode
+# Xcode & iOS builds
 *.xcodeproj/
 !*.xcodeproj/project.xcworkspace/xcshareddata/
 xcuserdata/
@@ -10,12 +10,23 @@ build_output/
 *.dSYM.zip
 *.xcresult
 
+# Node & JavaScript dependencies & outputs
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+*.log
+
 # Local config & secrets — never commit
 Config/Local.xcconfig
 .env
 .env.*
 !.env.example
 backend/token-service/.dev.vars
-backend/token-service/node_modules/
 
+# Temporary & session storage
+background-engine/data/sessions.json
+
+# OS files
 .DS_Store
+Thumbs.db

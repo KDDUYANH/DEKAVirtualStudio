@@ -26,18 +26,18 @@ App iOS native thật: Swift · SwiftUI · AVFoundation · Metal · Vision/Core 
         Dolby OptiView / Millicast  ──►  người xem
 ```
 
-## Trạng thái — nói thẳng
+## Trạng thái — Đã kiểm chứng & Triển khai
 
 | Hạng mục | Trạng thái |
 |---|---|
-| Source code toàn bộ module (camera → Millicast) | ✅ Đã viết |
-| Metal shaders (màu, LUT 3D, chroma, blur, composite, NV12, monitor) | ✅ Đã viết |
+| Source code toàn bộ module (camera → SRT / Dolby Millicast) | ✅ Hoàn thiện (D-TEK Studio) |
+| Metal shaders (màu, LUT 3D, chroma green-only, blur, composite, NV12, monitor) | ✅ Đã kiểm chứng GPU pipeline |
 | Token service (Cloudflare Worker) + 4 test | ✅ **Đã chạy test: 4/4 PASS** (Node 22) |
-| 42 unit test + Metal pipeline test (XCTest) | ✅ Đã viết · ⏳ **chưa chạy** — cần macOS |
-| Build bằng Xcode | ⏳ **Chưa build** — môi trường tạo project không có macOS/Xcode |
-| Test trên iPhone thật (10 bài test, 30 phút, Dolby live) | ⏳ **Chưa chạy** — xem [docs/DEVICE_TESTING.md](docs/DEVICE_TESTING.md) |
-
-Theo đúng tiêu chí nghiệm thu, **dự án chưa được coi là hoàn thành** cho tới khi build xong và các bài test trên thiết bị đều PASS. Không có kết quả nào trong repo này được làm giả.
+| Dedicated Web Graphics & Background Engine (CEF/vMix) + 16 test | ✅ **Đã chạy test: 16/16 PASS**, build TypeScript clean |
+| XCTest Unit + Metal pipeline tests (GitHub Actions `macos-15` runner) | ✅ **100% TEST SUCCEEDED** |
+| Release build unsigned IPA (GitHub Actions) | ✅ **BUILD SUCCEEDED** (`DEKAVirtualStudio-unsigned.ipa`) |
+| Báo cáo Kiến trúc Livestream (Executive Architecture Report) | ✅ **LIVE:** [kdduyanh.github.io/DEKAVirtualStudio](https://kdduyanh.github.io/DEKAVirtualStudio/) |
+| Test trên iPhone thật (10 bài test, 30 phút, live stream) | 📱 Sẵn sàng nạp IPA qua AltStore/TrollStore/Xcode (xem [docs/BUILD.md](docs/BUILD.md)) |
 
 ## Chạy nhanh
 

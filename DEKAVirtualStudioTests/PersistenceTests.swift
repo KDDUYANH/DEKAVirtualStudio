@@ -24,6 +24,7 @@ final class ProjectManagerTests: XCTestCase {
         p.output.srtStreamId = "publish:test"
         p.output.srtReturnEnabled = true
         p.output.srtReturnStreamId = "read:test"
+        p.output.cleanFeedLiveOutput = true
         try pm.save(p)
         let loaded = try pm.load(id: p.id)
         XCTAssertEqual(loaded.scenes[0].color.exposure, 0.7)
@@ -34,6 +35,7 @@ final class ProjectManagerTests: XCTestCase {
         XCTAssertEqual(loaded.output.srtStreamId, "publish:test")
         XCTAssertEqual(loaded.output.srtReturnEnabled, true)
         XCTAssertEqual(loaded.output.srtReturnStreamId, "read:test")
+        XCTAssertEqual(loaded.output.cleanFeedLiveOutput, true)
         XCTAssertEqual(pm.list().count, 1)
     }
 

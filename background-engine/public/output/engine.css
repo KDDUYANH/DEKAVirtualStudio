@@ -1,0 +1,205 @@
+/**
+ * DEKA BACKGROUND ENGINE - OUTPUT STYLES
+ * Optimized for vMix Web Browser Input (CEF) & High-performance 60fps GPU Compositing
+ */
+
+:root {
+  --canvas-width: 1920px;
+  --canvas-height: 1080px;
+  --bg-color: #07090e;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden !important;
+  background-color: var(--bg-color);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #ffffff;
+}
+
+/* ============================================================================
+   TRANSPARENT MODE (for vMix Alpha Channel Overlay)
+   ============================================================================ */
+body.mode-transparent {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+#compositor-stage {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
+}
+
+/* Each Layer Element */
+.layer-node {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: none; /* Prevents cursor interfering on broadcast */
+  transform-origin: top left;
+  transform: translate3d(0, 0, 0);
+  will-change: transform, opacity;
+  transition: opacity 0.25s ease, filter 0.25s ease;
+}
+
+.layer-node.hidden {
+  display: none !important;
+}
+
+/* Specific Layer Type Styling */
+.layer-node.type-image img,
+.layer-node.type-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.layer-node.type-image.cover img {
+  object-fit: cover;
+}
+
+.layer-node.type-browser iframe,
+.layer-node.type-game iframe,
+.layer-node.type-chat iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+  pointer-events: auto; /* Allow interaction inside if needed */
+  background: transparent;
+}
+
+/* Alert Layer Styling */
+.layer-node.type-alert {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(185, 28, 28, 0.98));
+  color: #fff;
+  padding: 24px 36px;
+  box-shadow: 0 0 50px rgba(239, 68, 68, 0.6), inset 0 0 20px rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  animation: alertPulse 1.8s infinite ease-in-out;
+}
+
+.layer-node.type-alert.severity-info {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.95), rgba(37, 99, 235, 0.98));
+  box-shadow: 0 0 50px rgba(59, 130, 246, 0.6);
+}
+
+.layer-node.type-alert.severity-warning {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.95), rgba(217, 119, 6, 0.98));
+  box-shadow: 0 0 50px rgba(245, 158, 11, 0.6);
+}
+
+@keyframes alertPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+.alert-content {
+  text-align: center;
+}
+.alert-title {
+  font-size: 28px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+.alert-message {
+  font-size: 20px;
+  font-weight: 500;
+  opacity: 0.95;
+}
+
+/* Timer Layer Styling */
+.layer-node.type-timer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1px solid rgba(0, 242, 254, 0.3);
+  padding: 8px 16px;
+  font-family: 'JetBrains Mono', monospace, 'Segoe UI';
+}
+
+.timer-badge {
+  background: #ef4444;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 6px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+}
+
+.timer-text {
+  font-size: 24px;
+  font-weight: 700;
+  color: #00f2fe;
+  letter-spacing: 2px;
+}
+
+/* Custom Lower-Third Ticker Layer */
+.layer-node.type-custom {
+  background: linear-gradient(90deg, rgba(7, 9, 14, 0.95), rgba(15, 23, 42, 0.98), rgba(7, 9, 14, 0.95));
+  border-top: 1px solid rgba(0, 242, 254, 0.4);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.ticker-track {
+  display: inline-block;
+  padding-left: 100%;
+  animation: tickerMove 25s linear infinite;
+  font-size: 20px;
+  font-weight: 600;
+  color: #f8fafc;
+  letter-spacing: 2px;
+}
+
+@keyframes tickerMove {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-100%, 0, 0); }
+}
+
+/* Degraded Status Watermark (Small and non-intrusive on broadcast) */
+#degraded-badge {
+  position: fixed;
+  bottom: 8px;
+  right: 12px;
+  background: rgba(234, 179, 8, 0.85);
+  color: #000;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+  display: none;
+  z-index: 9999;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+body.degraded #degraded-badge {
+  display: block;
+}

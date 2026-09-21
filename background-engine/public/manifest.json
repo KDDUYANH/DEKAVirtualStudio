@@ -1,0 +1,15 @@
+{
+  "name": "DEKA Background Engine 24/7",
+  "short_name": "DEKA Engine",
+  "start_url": "/output/table-01",
+  "display": "fullscreen",
+  "background_color": "#07090e",
+  "theme_color": "#00f2fe",
+  "icons": [
+    {
+      "src": "/assets/deka-logo.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

@@ -1,13 +1,15 @@
 {
   "name": "deka-live-dashboard",
   "version": "1.0.0",
-  "description": "Real-time Stream Quality Monitoring Dashboard for TikTok/YouTube Live Streamers + Multi-Camera",
+  "description": "Real-time Stream Quality Monitoring Dashboard & 24/7 Dedicated Web Graphics/Background Composer",
   "scripts": {
-    "dev:backend": "npm --prefix backend run dev",
-    "dev:frontend": "npm --prefix frontend run dev",
-    "build:backend": "npm --prefix backend run build",
-    "build:frontend": "npm --prefix frontend run build",
-    "build": "npm run build:backend && npm run build:frontend"
+    "build": "npm --prefix background-engine run build",
+    "test": "npm --prefix background-engine test && npm --prefix backend/token-service test",
+    "start": "npm --prefix background-engine start",
+    "dev:bg-engine": "npm --prefix background-engine run dev",
+    "test:bg-engine": "npm --prefix background-engine test",
+    "test:token-service": "npm --prefix backend/token-service test",
+    "build:bg-engine": "npm --prefix background-engine run build"
   },
-  "keywords": ["streaming", "vmix", "mediamtx", "srt", "dashboard", "broadcasting"]
+  "keywords": ["streaming", "vmix", "mediamtx", "srt", "dashboard", "broadcasting", "compositor"]
 }

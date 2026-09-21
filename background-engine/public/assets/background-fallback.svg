@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="100%" height="100%">
+  <defs>
+    <radialGradient id="offlineGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#18181b" />
+      <stop offset="100%" stop-color="#09090b" />
+    </radialGradient>
+  </defs>
+
+  <rect width="1920" height="1080" fill="url(#offlineGrad)" />
+
+  <g opacity="0.15">
+    <pattern id="diagStripes" width="40" height="40" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="0" x2="0" y2="40" stroke="#ffffff" stroke-width="2" />
+    </pattern>
+    <rect width="1920" height="1080" fill="url(#diagStripes)" />
+  </g>
+
+  <!-- Offline Standby Indicator -->
+  <rect x="760" y="480" width="400" height="120" rx="12" fill="rgba(24, 24, 27, 0.9)" stroke="#eab308" stroke-width="2" />
+  <circle cx="800" cy="540" r="12" fill="#eab308">
+    <animate attributeName="opacity" values="1;0.2;1" dur="1.5s" repeatCount="indefinite" />
+  </circle>
+  <text x="830" y="535" font-family="'Segoe UI', sans-serif" font-size="20" font-weight="bold" fill="#ffffff">STANDBY CACHE MODE</text>
+  <text x="830" y="560" font-family="'Segoe UI', sans-serif" font-size="14" fill="#a1a1aa">DEKA BACKGROUND ENGINE 24/7</text>
+</svg>
