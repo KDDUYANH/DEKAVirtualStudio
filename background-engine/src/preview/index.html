@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DEKA BACKGROUND ENGINE — PREVIEW & OPERATOR CONTROL</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="preview.css">
+</head>
+<body>
+
+  <!-- TOP HEADER -->
+  <header class="preview-header">
+    <div class="brand-section">
+      <span class="brand-title">BACKGROUND ENGINE</span>
+      <span class="brand-badge">PREVIEW WORKSPACE</span>
+    </div>
+
+    <!-- Status Group -->
+    <div class="status-pills-group">
+      <div class="status-pill">
+        <span class="status-dot red" id="dot-auth"></span>
+        <span id="label-auth">LOGIN REQUIRED</span>
+      </div>
+      <div class="status-pill">
+        <span class="status-dot red" id="dot-game"></span>
+        <span id="label-game">GAME: STANDBY</span>
+      </div>
+      <div class="status-pill">
+        <span class="status-dot red" id="dot-chat"></span>
+        <span id="label-chat">CHAT: STANDBY</span>
+      </div>
+      <div class="safety-gate-badge badge-program-safe" id="safety-gate-badge">
+        PROGRAM SAFE
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN TWO-COLUMN WORKSPACE -->
+  <main class="workspace-grid">
+
+    <!-- LEFT COLUMN: LIVE MONITOR & TARGET DIAGNOSTICS -->
+    <section class="left-workspace">
+
+      <!-- Live Program Output Preview Monitor -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>🔴 LIVE PROGRAM OUTPUT MONITOR (16:9 ISOLATED)</span>
+          <span style="font-size: 11px; color: var(--gold-primary); font-weight: 600;">COMPOSITOR-APPROVED ONLY</span>
+        </div>
+        <div class="monitor-aspect-box">
+          <iframe id="program-monitor-frame" class="monitor-frame" src="../program/index.html"></iframe>
+        </div>
+      </div>
+
+      <!-- Target Selection & Source Health -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>🎯 TARGET SELECTION & RECOVERY STATE</span>
+          <button class="btn btn-save" id="btn-force-recover">🔄 RECHECK SOURCES</button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <!-- Game Target Card -->
+          <div class="automove-status-card">
+            <div style="display: flex; justify-content: space-between;">
+              <strong style="font-size: 12px; color: var(--gold-primary);">LIVE GAME TARGET</strong>
+              <span id="status-game-sub" style="font-size: 11px; color: #f59e0b;">Standby</span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted);" id="url-game-display">https://play.sunwin.agency/</div>
+            <div style="display: flex; gap: 6px; margin-top: 4px;">
+              <button class="btn btn-save" id="btn-reconnect-game">Phục Hồi Game</button>
+            </div>
+          </div>
+
+          <!-- Chat Target Card -->
+          <div class="automove-status-card">
+            <div style="display: flex; justify-content: space-between;">
+              <strong style="font-size: 12px; color: var(--gold-primary);">LIVE CHAT TARGET</strong>
+              <span id="status-chat-sub" style="font-size: 11px; color: #f59e0b;">Standby</span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted);" id="url-chat-display">wss://livecasino.sandboxg1.win/chat</div>
+            <div style="display: flex; gap: 6px; margin-top: 4px;">
+              <button class="btn btn-save" id="btn-reconnect-chat">Phục Hồi Chat</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Diagnostics Panel -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>📊 DIAGNOSTICS & TELEMETRY</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+          <div class="automove-status-card">
+            <span style="font-size: 10px; color: var(--text-muted);">RENDER FPS</span>
+            <span class="stat-row-val" id="diag-fps">60.0</span>
+          </div>
+          <div class="automove-status-card">
+            <span style="font-size: 10px; color: var(--text-muted);">NDI RECEIVERS</span>
+            <span class="stat-row-val" id="diag-receivers">0</span>
+          </div>
+          <div class="automove-status-card">
+            <span style="font-size: 10px; color: var(--text-muted);">APP UPTIME</span>
+            <span class="stat-row-val" id="diag-uptime">0m 0s</span>
+          </div>
+          <div class="automove-status-card">
+            <span style="font-size: 10px; color: var(--text-muted);">MEMORY (MB)</span>
+            <span class="stat-row-val" id="diag-ram">--</span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- RIGHT COLUMN: CONTROLS, POSITIONS, AUTO MOVE, NDI OUTPUT -->
+    <aside class="right-controls">
+
+      <!-- 1. AUTHENTICATION PANEL -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>🔐 AUTHENTICATION GATE</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div id="auth-prompt-box" style="font-size: 12px; color: var(--text-muted); background: rgba(0,0,0,0.3); padding: 10px; border-radius: 6px;">
+            Trạng thái: <strong id="auth-status-text" style="color: #ef4444;">LOGIN REQUIRED</strong>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-primary" id="btn-open-login" style="flex: 1;">🔑 OPEN LOGIN</button>
+            <button class="btn btn-danger" id="btn-logout">Đăng Xuất</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. THREE POSITIONS SECTION -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>📐 THREE POSITIONS (PRESETS)</span>
+        </div>
+        <div class="positions-grid">
+          <button class="pos-btn active" id="btn-pos-1">POSITION 1</button>
+          <button class="pos-btn" id="btn-pos-2">POSITION 2</button>
+          <button class="pos-btn" id="btn-pos-3">POSITION 3</button>
+        </div>
+        <div class="save-pos-group">
+          <button class="btn btn-save" id="btn-save-p1">SAVE P1</button>
+          <button class="btn btn-save" id="btn-save-p2">SAVE P2</button>
+          <button class="btn btn-save" id="btn-save-p3">SAVE P3</button>
+        </div>
+      </div>
+
+      <!-- 3. AUTO MOVE TIMELINE SECTION -->
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>⏱️ AUTO MOVE (CHOREOGRAPHY)</span>
+          <span id="automove-state-pill" style="font-size: 10px; color: var(--green-active); font-weight: 800;">RUNNING</span>
+        </div>
+
+        <div class="automove-status-card">
+          <div class="stat-row">
+            <span style="color: var(--text-muted);">CURRENT POSITION</span>
+            <span class="stat-row-val" id="automove-current">P1</span>
+          </div>
+          <div class="stat-row">
+            <span style="color: var(--text-muted);">TIME REMAINING</span>
+            <span class="stat-row-val" id="automove-remaining">30s</span>
+          </div>
+          <div class="stat-row">
+            <span style="color: var(--text-muted);">NEXT POSITION</span>
+            <span class="stat-row-val" id="automove-next">P2</span>
+          </div>
+        </div>
+
+        <div class="automove-controls">
+          <button class="btn btn-primary" id="btn-auto-start">▶ START</button>
+          <button class="btn" id="btn-auto-pause">⏸ PAUSE</button>
+          <button class="btn" id="btn-auto-prev">⏮ PREVIOUS</button>
+          <button class="btn" id="btn-auto-next">⏭ NEXT</button>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px;">
+          <label style="font-size: 12px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+            <input type="checkbox" id="chk-auto-loop" checked>
+            <span>LOOP (P1 → P2 → P3 → P1)</span>
+          </label>
+          <button class="btn btn-save" id="btn-auto-stop">⏹ STOP</button>
+        </div>
+      </div>
+
+      <!-- 4. NDI HIGH BANDWIDTH OUTPUT WIDGET (USER SPECIFICATION) -->
+      <div class="ndi-output-widget">
+        <div class="ndi-badge-header">
+          <strong style="font-size: 13px; letter-spacing: 1px; color: #fff;">OUTPUT</strong>
+          <div class="ndi-ready-pill">
+            <span class="status-dot green"></span>
+            <span id="ndi-ready-label">NDI READY</span>
+          </div>
+        </div>
+
+        <div class="ndi-info-grid">
+          <div>Name: <span class="ndi-info-val" id="ndi-stream-name">BackgroundEngine-PGM</span></div>
+          <div>Resolution: <span class="ndi-info-val">1920 × 1080</span></div>
+          <div>FPS: <span class="ndi-info-val">60</span></div>
+        </div>
+
+        <button class="btn btn-primary" id="btn-test-output">📺 TEST OUTPUT</button>
+
+        <div class="target-toggle-group">
+          <span>Target:</span>
+          <label class="radio-item">
+            <input type="radio" name="output_target" value="vmix" checked>
+            <span>vMix</span>
+          </label>
+          <label class="radio-item">
+            <input type="radio" name="output_target" value="obs">
+            <span>OBS</span>
+          </label>
+        </div>
+      </div>
+
+    </aside>
+
+  </main>
+
+  <script src="previewApp.js"></script>
+</body>
+</html>

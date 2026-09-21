@@ -1,36 +1,56 @@
 {
-  "name": "deka-background-engine",
+  "name": "background-engine",
+  "productName": "Background Engine",
   "version": "1.0.0",
-  "description": "24/7 Dedicated Web Graphics & Background Composer for vMix CEF and Live Broadcasting",
-  "main": "dist/server.js",
+  "description": "Production-Ready Windows Background Engine for vMix and OBS (NDI High Bandwidth)",
+  "main": "dist/main/main.js",
+  "author": "DEKA Productions",
+  "license": "UNLICENSED",
+  "private": true,
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/server.js",
-    "dev": "tsx src/server.ts",
-    "test": "tsx --test tests/**/*.test.ts"
+    "dev": "vite",
+    "build:ndi": "dotnet publish src/ndi/NdiBridge.csproj -c Release -r win-x64 --self-contained false -o bin/ndi",
+    "build:ts": "tsc -p tsconfig.json",
+    "build:vite": "vite build",
+    "build": "npm run build:ndi && npm run build:ts && npm run build:vite",
+    "start": "electron dist/main/main.js",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder",
+    "test": "node --test tests/**/*.test.js"
   },
-  "keywords": [
-    "vmix",
-    "background-engine",
-    "compositor",
-    "broadcast",
-    "cef",
-    "streaming"
-  ],
   "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2",
-    "jsonwebtoken": "^9.0.2",
     "ws": "^8.18.0"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.17",
-    "@types/express": "^4.17.21",
-    "@types/jsonwebtoken": "^9.0.6",
     "@types/node": "^20.14.9",
     "@types/ws": "^8.5.10",
-    "tsx": "^4.16.2",
-    "typescript": "^5.5.3"
+    "electron": "^31.1.0",
+    "electron-builder": "^24.13.3",
+    "typescript": "^5.5.3",
+    "vite": "^5.3.3"
+  },
+  "build": {
+    "appId": "com.deka.backgroundengine",
+    "productName": "Background Engine",
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ],
+      "icon": "public/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": "always",
+      "createStartMenuShortcut": true,
+      "artifactName": "BackgroundEngine-Setup.${ext}"
+    },
+    "files": [
+      "dist/**/*",
+      "bin/ndi/**/*",
+      "public/**/*",
+      "package.json"
+    ]
   }
 }
