@@ -43,6 +43,8 @@ targets:
         product: HaishinKit
       - package: HaishinKit
         product: SRTHaishinKit
+      - package: HaishinKit
+        product: RTMPHaishinKit
       - sdk: Metal.framework
       - sdk: MetalKit.framework
       - sdk: AVFoundation.framework

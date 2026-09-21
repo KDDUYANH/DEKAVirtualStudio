@@ -28,7 +28,7 @@ jobs:
           brew install xcodegen
           xcodegen generate
 
-      - name: Resolve Swift packages (HaishinKit + SRTHaishinKit)
+      - name: Resolve Swift packages (HaishinKit + SRTHaishinKit + RTMPHaishinKit)
         run: xcodebuild -resolvePackageDependencies -project DEKAVirtualStudio.xcodeproj -scheme DEKAVirtualStudio
 
       - name: Unit + Metal tests (Simulator)

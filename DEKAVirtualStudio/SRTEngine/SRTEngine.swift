@@ -13,6 +13,7 @@ import CoreMedia
 import VideoToolbox
 import HaishinKit
 import SRTHaishinKit
+import RTMPHaishinKit
 import MetalKit
 
 final class SRTEngine: StreamPublisher, @unchecked Sendable {
