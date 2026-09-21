@@ -55,36 +55,154 @@
         </div>
       </div>
 
-      <!-- Target Selection & Source Health -->
-      <div class="panel-card">
+      <!-- 4-STEP SOURCE DISCOVERY & ADAPTER MANAGER -->
+      <div class="panel-card source-discovery-card">
         <div class="panel-title">
-          <span>🎯 TARGET SELECTION & RECOVERY STATE</span>
-          <button class="btn btn-save" id="btn-force-recover">🔄 RECHECK SOURCES</button>
+          <span>🧭 SOURCE DISCOVERY & ADAPTER MANAGER</span>
+          <div class="step-indicator-pills">
+            <span class="step-pill active" id="pill-step-1">STEP 01: FIND</span>
+            <span class="step-pill" id="pill-step-2">STEP 02: ANALYZE</span>
+            <span class="step-pill" id="pill-step-3">STEP 03: PREVIEW</span>
+            <span class="step-pill" id="pill-step-4">STEP 04: ENGINE</span>
+          </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-          <!-- Game Target Card -->
-          <div class="automove-status-card">
-            <div style="display: flex; justify-content: space-between;">
-              <strong style="font-size: 12px; color: var(--gold-primary);">LIVE GAME TARGET</strong>
-              <span id="status-game-sub" style="font-size: 11px; color: #f59e0b;">Standby</span>
+        <!-- STEP 01: FIND SOURCE -->
+        <div class="wizard-step-panel" id="panel-step-1">
+          <div style="font-size: 11px; color: var(--text-muted);">
+            Nhập địa chỉ trang web trực tiếp hoặc sử dụng phiên duyệt web đã xác thực.
+          </div>
+          <div class="input-row">
+            <input type="text" id="input-source-url" class="text-input" placeholder="https://example.com/live-stream" />
+            <button class="btn btn-primary" id="btn-scan-source">🔍 SCAN WEBSITE</button>
+          </div>
+
+          <div class="or-divider">HOẶC</div>
+
+          <div class="browser-detection-box">
+            <div>
+              <div style="font-size: 12px; font-weight: 700; color: #fff;">TRÌNH DUYỆT ĐANG ĐĂNG NHẬP</div>
+              <div style="font-size: 11px; color: var(--text-muted);" id="browser-detection-desc">
+                ● Trình duyệt Chromium cách ly &bull; Phiên: <span id="browser-session-status" style="color: #f59e0b;">Chưa đăng nhập</span>
+              </div>
             </div>
-            <div style="font-size: 11px; color: var(--text-muted);" id="url-game-display">https://play.sunwin.agency/</div>
-            <div style="display: flex; gap: 6px; margin-top: 4px;">
-              <button class="btn btn-save" id="btn-reconnect-game">Phục Hồi Game</button>
+            <button class="btn btn-save" id="btn-detect-browser">⚡ PHÂN TÍCH PHIÊN</button>
+          </div>
+        </div>
+
+        <!-- STEP 02: ANALYZE -->
+        <div class="wizard-step-panel hidden" id="panel-step-2">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 11px; color: var(--text-muted);">KẾT QUẢ PHÂN TÍCH THỜI GIAN THỰC (ZERO-MOCK)</span>
+            <button class="btn" style="padding: 2px 8px; font-size: 10px;" id="btn-back-to-step-1">← QUAY LẠI</button>
+          </div>
+
+          <div id="candidates-container" style="display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto;">
+            <!-- Rendered dynamically -->
+            <div style="font-size: 11px; color: var(--text-muted); text-align: center; padding: 20px;">
+              Đang chờ quét nguồn dữ liệu...
             </div>
           </div>
 
-          <!-- Chat Target Card -->
-          <div class="automove-status-card">
-            <div style="display: flex; justify-content: space-between;">
-              <strong style="font-size: 12px; color: var(--gold-primary);">LIVE CHAT TARGET</strong>
-              <span id="status-chat-sub" style="font-size: 11px; color: #f59e0b;">Standby</span>
+          <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;">
+            <button class="btn btn-primary" id="btn-proceed-preview" disabled>▶ XEM THỬ NGUỒN CHỌN</button>
+          </div>
+        </div>
+
+        <!-- STEP 03: SOURCE PREVIEW -->
+        <div class="wizard-step-panel hidden" id="panel-step-3">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 11px; color: var(--text-muted);">KIỂM THỬ NGUỒN THỰC (SOURCE HEALTH CHECK)</span>
+            <button class="btn" style="padding: 2px 8px; font-size: 10px;" id="btn-back-to-step-2">← CHỌN LẠI</button>
+          </div>
+
+          <div class="source-live-preview-box" id="source-preview-viewport">
+            <div class="no-source-placeholder" id="preview-no-source-placeholder">
+              <span style="font-size: 24px;">📡</span>
+              <span>NO SOURCE CONNECTED</span>
+              <span style="font-size: 10px; color: #6b7280; font-weight: 500;">Không sử dụng dữ liệu giả. Nguồn thực sẽ xuất hiện khi kết nối.</span>
             </div>
-            <div style="font-size: 11px; color: var(--text-muted);" id="url-chat-display">wss://livecasino.sandboxg1.win/chat</div>
-            <div style="display: flex; gap: 6px; margin-top: 4px;">
-              <button class="btn btn-save" id="btn-reconnect-chat">Phục Hồi Chat</button>
+            <img id="source-preview-img" style="display: none;" alt="Preview Frame" />
+          </div>
+
+          <div class="telemetry-strip">
+            <div class="telemetry-item">
+              <span class="telemetry-label">KẾT NỐI</span>
+              <span class="telemetry-value" id="prev-metric-conn" style="color: #ef4444;">● OFFLINE</span>
             </div>
+            <div class="telemetry-item">
+              <span class="telemetry-label">XÁC THỰC</span>
+              <span class="telemetry-value" id="prev-metric-auth">CHƯA CÓ</span>
+            </div>
+            <div class="telemetry-item">
+              <span class="telemetry-label">ĐỘ TRỄ</span>
+              <span class="telemetry-value" id="prev-metric-lat">-- ms</span>
+            </div>
+            <div class="telemetry-item">
+              <span class="telemetry-label">TỐC ĐỘ</span>
+              <span class="telemetry-value" id="prev-metric-fps">-- FPS</span>
+            </div>
+            <div class="telemetry-item">
+              <span class="telemetry-label">CẬP NHẬT</span>
+              <span class="telemetry-value" id="prev-metric-update">--</span>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; gap: 8px;">
+            <button class="btn btn-save" id="btn-test-active-source">🧪 KIỂM THỬ KẾT NỐI</button>
+            <div style="display: flex; gap: 8px;">
+              <button class="btn btn-save" id="btn-reconnect-active-source">🔄 RECONNECT</button>
+              <button class="btn btn-primary" id="btn-confirm-add-engine">➕ THÊM VÀO BACK ENGINE</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 04: ADD TO BACK ENGINE & SCENE LAYERS -->
+        <div class="wizard-step-panel hidden" id="panel-step-4">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 11px; color: var(--text-muted);">ĐỊNH NGUYÊN LỚP NGUỒN (BACKGROUND ENGINE LAYERS)</span>
+            <button class="btn" style="padding: 2px 8px; font-size: 10px;" id="btn-back-to-step-3">← XEM THỬ</button>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div class="automove-status-card">
+              <span style="font-size: 10px; color: var(--text-muted);">ADAPTER ID</span>
+              <span class="stat-row-val" id="engine-adapter-id" style="font-size: 11px;">--</span>
+            </div>
+            <div class="automove-status-card">
+              <span style="font-size: 10px; color: var(--text-muted);">GÁN VÀO LỚP SCENE</span>
+              <select id="select-layer-target" style="background: rgba(0,0,0,0.4); border: 1px solid var(--border-light); color: #fff; padding: 4px; border-radius: 4px; font-size: 11px;">
+                <option value="game">Layer 01: Game Live (Main Stream)</option>
+                <option value="chat">Layer 02: Chat Stream (Live Comments)</option>
+                <option value="warning">Layer 03: Customer Notice / Marquee</option>
+                <option value="logo">Layer 04: Brand Logo</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="max-height: 140px; overflow-y: auto;">
+            <table class="layer-table">
+              <thead>
+                <tr>
+                  <th>LỚP</th>
+                  <th>NGUỒN / LOẠI</th>
+                  <th>TRẠNG THÁI</th>
+                  <th>THAO TÁC</th>
+                </tr>
+              </thead>
+              <tbody id="engine-layers-table-body">
+                <tr>
+                  <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 12px;">
+                    Chưa có nguồn adapter nào được thêm vào Engine.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+            <button class="btn btn-save" id="btn-new-discovery">➕ TÌM THÊM NGUỒN MỚI</button>
+            <button class="btn btn-primary" id="btn-save-scene">💾 LƯU SCENE HIỆN TẠI</button>
           </div>
         </div>
       </div>

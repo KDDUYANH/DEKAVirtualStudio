@@ -1,51 +1,59 @@
-# HƯỚNG DẪN CÀI ĐẶT & YÊU CẦU HỆ THỐNG (README-INSTALL)
+# HƯỚNG DẪN CÀI ĐẶT 1-CLICK & YÊU CẦU HỆ THỐNG (README-INSTALL)
 
-## 1. Yêu Cầu Phần Cứng & Hệ Điều Hành
+## 1. Thông Tin File Cài Đặt 1-Click (Release Artifacts)
+
+| Tên File | Dung Lượng | Kiểu Đóng Gói | Mô Tả |
+| :--- | :--- | :--- | :--- |
+| [**BackgroundEngine-Setup.exe**](file:///e:/OneDrive/DEKA/Th%C6%B0%20mu%CC%A3c%20m%C6%A1%CC%81i/release/BackgroundEngine-Setup.exe) | **~257 MB** | **NSIS 1-Click Installer** | Bộ cài đặt tự động 1-click đầy đủ: tự động tạo shortcut Desktop, Start Menu và chạy ngay không cần cấu hình phức tạp |
+| [**Background Engine-1.0.0-win.zip**](file:///e:/OneDrive/DEKA/Th%C6%B0%20mu%CC%A3c%20m%C6%A1%CC%81i/release/Background%20Engine-1.0.0-win.zip) | **~306 MB** | **Portable Standalone** | Gói zip chạy trực tiếp, không cần quyền Admin, giải nén là chạy |
+| [**SHA256SUMS.txt**](file:///e:/OneDrive/DEKA/Th%C6%B0%20mu%CC%A3c%20m%C6%A1%CC%81i/release/SHA256SUMS.txt) | **< 1 KB** | **Checksums** | Bảng mã băm SHA256 xác thực toàn vẹn gói cài đặt |
+
+### Mã Kiểm Tra Toàn Vẹn SHA256
+```text
+2A2D9D163A9A0C4E0D8E723618650FD5BB5853F58AD803441A593A2359961EA3 *BackgroundEngine-Setup.exe
+5A8D90D81B16C1ED466D6628AD4C79C01090FFA60CB3D8546CB0BC88FB987D06 *Background Engine-1.0.0-win.zip
+```
+
+---
+
+## 2. Cách Cài Đặt 1-Click (Dành Cho Kỹ Thuật Viên / Vận Hành)
+
+### Cách 1: Cài Đặt 1-Click Siêu Tốc (Khuyến nghị)
+1. Nhấp đúp chuột vào file [**BackgroundEngine-Setup.exe**](file:///e:/OneDrive/DEKA/Th%C6%B0%20mu%CC%A3c%20m%C6%A1%CC%81i/release/BackgroundEngine-Setup.exe).
+2. Trình cài đặt NSIS 1-Click sẽ tự động:
+   - Giải nén mã nguồn Engine & Runtime vào thư mục chuẩn Windows (`%LOCALAPPDATA%\Programs\BackgroundEngine`).
+   - Tích hợp sẵn `NdiBridge.exe` (.NET 9 x64) và Named Pipe Server cho NDI High Bandwidth.
+   - Tạo biểu tượng lối tắt (Desktop Shortcut) có biểu tượng nhận diện.
+   - Tự động thêm vào Start Menu.
+   - Tự động khởi chạy ứng dụng ngay sau khi cài xong.
+
+### Cách 2: Bản Portable Di Động
+1. Giải nén [**Background Engine-1.0.0-win.zip**](file:///e:/OneDrive/DEKA/Th%C6%B0%20mu%CC%A3c%20m%C6%A1%CC%81i/release/Background%20Engine-1.0.0-win.zip) vào bất kỳ ổ đĩa nào (Ví dụ: `D:\DEKA\BackgroundEngine`).
+2. Mở thư mục đã giải nén và nhấp đúp **`Background Engine.exe`** để chạy ngay lập tức mà không cần cài đặt.
+
+---
+
+## 3. Yêu Cầu Phần Cứng & Môi Trường Vận Hành
 
 * **Hệ điều hành**: Windows 10 (64-bit) hoặc Windows 11 (64-bit).
-* **CPU**: Intel Core i5 / AMD Ryzen 5 thế hệ 8 trở lên (khuyến nghị 4 cores trở lên).
+* **CPU**: Intel Core i5 / AMD Ryzen 5 thế hệ 8 trở lên (khuyến nghị 4-8 cores).
 * **RAM**: Tối thiểu 8 GB (khuyến nghị 16 GB).
 * **GPU**: Hỗ trợ DirectX 11 / OpenGL 3.3+ (NVIDIA GeForce GTX 1050 trở lên hoặc Intel Iris Xe).
-* **Mạng**: Cổng mạng Gigabit LAN (1000 Mbps) để truyền luồng NDI High Bandwidth không trễ.
+* **Mạng**: Cổng mạng Gigabit LAN (1000 Mbps) để truyền luồng NDI High Bandwidth độ trễ siêu thấp đến vMix / OBS.
+* **NDI Runtime (Tùy chọn)**: Đã tích hợp sẵn NdiBridge, khuyến nghị cài thêm [NDI 6 Tools](https://ndi.video/tools/) nếu vMix/OBS nằm trên máy trạm khác qua mạng LAN.
 
 ---
 
-## 2. Các Runtime Bắt Buộc (Prerequisites)
+## 4. Kết Nối Nhanh Với vMix & OBS
 
-1. **Microsoft .NET 9 Desktop Runtime (x64)**:
-   - Thường đã có sẵn trên Windows 11 hoặc cài qua link chính thức của Microsoft:
-   - [Tải .NET 9 Runtime (x64)](https://dotnet.microsoft.com/en-us/download/dotnet/9.0)
-2. **NDI 6 Runtime hoặc NDI Tools**:
-   - Để vMix và OBS nhận luồng NDI chất lượng cao:
-   - [Tải NDI 6 Core Runtime](https://ndi.video/tools/)
-   - *Lưu ý: Nếu chưa cài NDI Runtime, phần mềm tự động kích hoạt chế độ Fallback qua cổng HTTP `http://127.0.0.1:7800/output` để vMix vẫn nhận được qua Browser Input.*
-3. **Microsoft Edge WebView2 Runtime**:
-   - Đã được tích hợp sẵn trên tất cả các bản Windows 10/11 cập nhật mới.
+### Kết nối với vMix:
+1. Mở **vMix** → Bấm **Add Input** (Góc dưới bên trái).
+2. Chọn tab **NDI / Desktop Capture**.
+3. Chọn nguồn **`BackgroundEngine-PGM`**.
+4. Bấm **OK**. Màn hình Program 1080p60 sẽ hiển thị ngay lập tức với độ trễ cực thấp (< 5ms).
 
----
-
-## 3. Các Cách Cài Đặt Ứng Dụng
-
-### Cách 1: Sử Dụng Bộ Cài Đặt (Khuyến nghị cho Studio)
-1. Tải về file **`BackgroundEngine-Setup.exe`**.
-2. Nhấp đúp chuột để chạy file cài đặt.
-3. Chọn thư mục cài đặt mong muốn (mặc định: `%LOCALAPPDATA%\Programs\BackgroundEngine`).
-4. Chọn tạo biểu tượng Desktop và Start Menu.
-5. Bấm **Install** và hoàn tất.
-
-### Cách 2: Chạy Bản Di Động (Portable Version)
-1. Tải về file **`BackgroundEngine-Portable.zip`**.
-2. Giải nén vào bất kỳ thư mục nào (VD: `D:\DEKA\BackgroundEngine`).
-3. Chạy file **`BackgroundEngine.exe`** để sử dụng ngay mà không cần cài đặt. Toàn bộ cấu hình sẽ được lưu an toàn tại `%LOCALAPPDATA%\BackgroundEngine`.
-
----
-
-## 4. Kiểm Tra Tương Thích vMix & OBS
-
-### vMix
-* Hỗ trợ tất cả các phiên bản vMix 24, 25, 26, 27 có kích hoạt tính năng NDI.
-* Vào **Settings** → **Performance** → Đảm bảo đã bật tăng tốc phần cứng GPU.
-
-### OBS Studio
-* OBS Studio 30+ hoặc 31+.
-* Cài đặt plugin **DistroAV (OBS-NDI)**: [Tải DistroAV cho OBS](https://obsproject.com/forum/resources/distroav-network-audio-video-in-obs-studio-using-ndi%C2%AE-technology.528/).
+### Kết nối với OBS Studio:
+1. Đảm bảo đã cài plugin **DistroAV (OBS-NDI)**.
+2. Mở OBS → Trong hộp **Sources**, bấm dấu **+** → Chọn **NDI™ Source**.
+3. Tại trường **Source name**, chọn **`BackgroundEngine-PGM`**.
+4. Bấm **OK**.

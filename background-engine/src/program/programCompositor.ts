@@ -144,23 +144,27 @@ function applyPositionPreset(preset: any) {
 // ============================================================================
 const chatContainer = document.getElementById('chat-messages');
 
-function appendChatMessage(msg: { user: string; text: string; vip?: number }) {
+function appendChatMessage(msg: { user?: string; username?: string; text?: string; message?: string; vip?: number }) {
   if (!chatContainer) return;
+
+  const author = msg.username || msg.user || 'User';
+  const content = msg.message || msg.text || '';
+  if (!content) return;
 
   const row = document.createElement('div');
   row.className = 'chat-row';
 
   const vipBadge = msg.vip && msg.vip > 0 ? `<span class="vip-badge">VIP ${msg.vip}</span>` : '';
-  const avatarUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(msg.user)}`;
+  const avatarUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=${encodeURIComponent(author)}`;
 
   row.innerHTML = `
     <img src="${avatarUrl}" class="chat-avatar" alt="avatar">
     <div class="chat-bubble">
       <div class="chat-user">
         ${vipBadge}
-        <span>${escapeHtml(msg.user)}</span>
+        <span>${escapeHtml(author)}</span>
       </div>
-      <div class="chat-msg">${escapeHtml(msg.text)}</div>
+      <div class="chat-msg">${escapeHtml(content)}</div>
     </div>
   `;
 
@@ -190,6 +194,7 @@ function updateSafetyState(state: string) {
   const standbyCard = document.getElementById('game-standby');
   const standbyTitle = document.getElementById('game-standby-title');
   const standbySub = document.getElementById('game-standby-sub');
+  const gameFrame = document.getElementById('game-frame') as HTMLImageElement | null;
 
   if (state === 'PROGRAM_READY') {
     if (standbyCard) standbyCard.style.display = 'none';
@@ -197,8 +202,15 @@ function updateSafetyState(state: string) {
     if (standbyCard) {
       standbyCard.style.display = 'flex';
       if (standbyTitle) standbyTitle.innerText = 'NGUỒN LIVE ĐANG KẾT NỐI LẠI';
-      if (standbySub) standbySub.innerText = 'Tự động phục hồi luồng cược không gián đoạn chương trình...';
+      if (standbySub) standbySub.innerText = 'Tự động phục hồi luồng dữ liệu không gián đoạn chương trình...';
     }
+  } else if (state === 'NO_SOURCE') {
+    if (standbyCard) {
+      standbyCard.style.display = 'flex';
+      if (standbyTitle) standbyTitle.innerText = 'CHƯA KẾT NỐI NGUỒN';
+      if (standbySub) standbySub.innerText = 'Vui lòng thêm nguồn từ bảng điều khiển Source Discovery.';
+    }
+    if (gameFrame) gameFrame.style.display = 'none';
   } else {
     // PROGRAM_SAFE or PROGRAM_AUTH_REQUIRED
     if (standbyCard) {
@@ -222,4 +234,26 @@ ipc.on('set-position', (_event: any, preset: any) => {
 
 ipc.on('new-chat-message', (_event: any, msg: any) => {
   appendChatMessage(msg);
+});
+
+ipc.on('adapter-frame', (_event: any, frame: { dataUrl: string }) => {
+  const gameFrame = document.getElementById('game-frame') as HTMLImageElement | null;
+  const standbyCard = document.getElementById('game-standby');
+  if (gameFrame && frame?.dataUrl) {
+    gameFrame.src = frame.dataUrl;
+    gameFrame.style.display = 'block';
+    if (standbyCard && currentSafetyState === 'PROGRAM_READY') {
+      standbyCard.style.display = 'none';
+    }
+  }
+});
+
+ipc.on('game-state-update', (_event: any, state: any) => {
+  // Update live timer or HUD indicators if active
+  if (state && state.countdownSeconds !== undefined) {
+    const timerLivePill = document.querySelector('.live-txt') as HTMLElement | null;
+    if (timerLivePill && state.countdownSeconds > 0) {
+      timerLivePill.innerText = `CÒN ${state.countdownSeconds}s`;
+    }
+  }
 });

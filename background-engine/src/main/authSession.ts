@@ -11,8 +11,9 @@ export interface AuthStatus {
 
 export class AuthSessionManager extends EventEmitter {
   private profileDir: string;
-  private authPartition = 'persist:sunwin_auth';
+  private authPartition = 'persist:operator_browser_session';
   private loginWindow: BrowserWindow | null = null;
+  private activeTargetUrl: string = '';
   private currentStatus: AuthStatus = {
     isAuthenticated: false,
     lastChecked: Date.now(),
@@ -33,16 +34,26 @@ export class AuthSessionManager extends EventEmitter {
     return { ...this.currentStatus };
   }
 
-  public openLoginWindow(parentWindow?: BrowserWindow): void {
+  public setTargetUrl(url: string): void {
+    this.activeTargetUrl = url;
+  }
+
+  public openLoginWindow(targetUrl?: string, parentWindow?: BrowserWindow): void {
+    const urlToLoad = targetUrl || this.activeTargetUrl;
+    if (!urlToLoad) {
+      console.warn('[AuthSession] Cannot open login window without a target URL');
+      return;
+    }
+
     if (this.loginWindow && !this.loginWindow.isDestroyed()) {
       this.loginWindow.focus();
       return;
     }
 
     this.loginWindow = new BrowserWindow({
-      width: 1024,
-      height: 720,
-      title: 'Xác Thực Đăng Nhập Sunwin (Preview Workspace Only)',
+      width: 1100,
+      height: 760,
+      title: 'Xác Thực Đăng Nhập Nguồn (Operator Workspace)',
       parent: parentWindow,
       modal: true,
       autoHideMenuBar: true,
@@ -54,7 +65,7 @@ export class AuthSessionManager extends EventEmitter {
       },
     });
 
-    this.loginWindow.loadURL('https://play.sunwin.agency/');
+    this.loginWindow.loadURL(urlToLoad);
 
     this.loginWindow.webContents.on('did-finish-load', () => {
       this.verifySession();
@@ -69,14 +80,15 @@ export class AuthSessionManager extends EventEmitter {
   public async verifySession(): Promise<boolean> {
     try {
       const sess = session.fromPartition(this.authPartition);
-      const cookies = await sess.cookies.get({ domain: 'sunwin.agency' });
+      const cookies = await sess.cookies.get({});
 
       // Check for presence of authenticated session tokens/cookies
       const hasAuthCookie = cookies.some(c => 
-        c.name.includes('token') || 
-        c.name.includes('session') || 
-        c.name.includes('auth') ||
-        c.name.includes('user')
+        c.name.toLowerCase().includes('token') || 
+        c.name.toLowerCase().includes('session') || 
+        c.name.toLowerCase().includes('auth') ||
+        c.name.toLowerCase().includes('user') ||
+        c.name.toLowerCase().includes('jwt')
       );
 
       const isAuthed = hasAuthCookie || cookies.length > 2;

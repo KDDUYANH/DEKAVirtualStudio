@@ -4,13 +4,17 @@
  * Auto Move Timeline, and NDI High Bandwidth Output Pipeline.
  */
 
+export * from './sourceTypes.js';
+
 export type SafetyGateState =
+  | 'NO_SOURCE'
   | 'PROGRAM_SAFE'
   | 'PROGRAM_READY'
   | 'PROGRAM_DEGRADED'
   | 'PROGRAM_AUTH_REQUIRED';
 
 export type GameSourceState =
+  | 'NO_SOURCE'
   | 'STARTING'
   | 'LOADING'
   | 'READY'
@@ -23,6 +27,7 @@ export type GameSourceState =
   | 'FAILED';
 
 export type ChatSourceState =
+  | 'NO_SOURCE'
   | 'STARTING'
   | 'LOADING'
   | 'READY'
@@ -94,6 +99,7 @@ export interface EngineConfig {
   autoMoveEnabled: boolean;
   autoMoveLoop: boolean;
   targets: TargetConfig;
+  configuredSources: import('./sourceTypes.js').SourceAdapterConfig[];
   positions: {
     P1: PositionPreset;
     P2: PositionPreset;

@@ -56,13 +56,14 @@ export const DEFAULT_CONFIG: EngineConfig = {
   autoMoveEnabled: true,
   autoMoveLoop: true,
   targets: {
-    selectedGameId: '306', // Xóc Đĩa Live
-    selectedGameUrl: 'https://play.sunwin.agency/',
-    lastKnownGoodGameUrl: 'https://play.sunwin.agency/',
-    selectedChatId: 'livecasino-chat',
-    selectedChatUrl: 'wss://livecasino.sandboxg1.win/chat',
-    lastKnownGoodChatUrl: 'wss://livecasino.sandboxg1.win/chat',
+    selectedGameId: '',
+    selectedGameUrl: '',
+    lastKnownGoodGameUrl: '',
+    selectedChatId: '',
+    selectedChatUrl: '',
+    lastKnownGoodChatUrl: '',
   },
+  configuredSources: [],
   positions: {
     P1: DEFAULT_P1,
     P2: DEFAULT_P2,

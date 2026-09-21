@@ -31,18 +31,18 @@
         </svg>
       </div>
       <div class="logo-text-wrap">
-        <span class="logo-title">SUNWIN</span>
+        <span class="logo-title">STUDIO LIVE</span>
         <span class="logo-sub">OFFICIAL BROADCAST</span>
       </div>
     </div>
 
     <!-- LAYER 3: MARQUEE WARNING TICKER -->
     <div id="comp-warning" class="comp-layer layer-warning">
-      <span class="marquee-pill">CẢNH BÁO AN TOÀN</span>
+      <span class="marquee-pill">THÔNG BÁO VẬN HÀNH</span>
       <div class="marquee-content">
-        Trải nghiệm cược và xem trực tiếp tại <span class="gold-hl">SUNWIN.AGENCY</span> &nbsp;•&nbsp;
-        Hệ thống nạp rút tự động 24/7 siêu tốc &nbsp;•&nbsp;
-        Quý khách lưu ý: Chỉ truy cập domain chính chủ để tránh website lừa đảo giả mạo!
+        Hệ thống phát sóng trực tiếp độ nét cao 1080p60 NDI High Bandwidth &nbsp;•&nbsp;
+        Giám sát an toàn luồng phát tự động 24/7 &nbsp;•&nbsp;
+        Khuyến cáo người xem chỉ theo dõi trên các kênh chính thức!
       </div>
     </div>
 
@@ -64,7 +64,8 @@
           <div class="standby-title" id="game-standby-title">NGUỒN LIVE ĐANG KẾT NỐI</div>
           <div class="standby-sub" id="game-standby-sub">Đang đồng bộ luồng video HD từ máy chủ an toàn...</div>
         </div>
-        <!-- Live Video Element / Canvas -->
+        <!-- Live Video Element / Live Frame Stream -->
+        <img id="game-frame" class="game-video-stream" style="display: none; width: 100%; height: 100%; object-fit: contain;" alt="Live Source Stream">
         <video id="game-video" class="game-video-stream" autoplay playsinline muted loop style="display: none;"></video>
       </div>
     </div>

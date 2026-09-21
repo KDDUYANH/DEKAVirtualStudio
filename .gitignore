@@ -16,6 +16,10 @@ node_modules/
 dist/
 **/dist/
 *.log
+bin/
+**/bin/
+obj/
+**/obj/
 
 # Local config & secrets — never commit
 Config/Local.xcconfig

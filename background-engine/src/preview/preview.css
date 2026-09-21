@@ -58,6 +58,7 @@ body {
   letter-spacing: 1.5px;
   background: linear-gradient(135deg, #fff, var(--gold-primary));
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
@@ -343,4 +344,207 @@ body {
   align-items: center;
   gap: 6px;
   cursor: pointer;
+}
+
+/* ==========================================================================
+   SOURCE DISCOVERY 4-STEP WIZARD STYLES
+   ========================================================================== */
+.step-indicator-pills {
+  display: flex;
+  gap: 6px;
+  background: rgba(0, 0, 0, 0.4);
+  padding: 4px;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+}
+
+.step-pill {
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 6px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.step-pill.active {
+  background: var(--gold-primary);
+  color: #100609;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.step-pill.completed {
+  color: var(--green-active);
+}
+
+.wizard-step-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wizard-step-panel.hidden {
+  display: none;
+}
+
+.input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.text-input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  outline: none;
+}
+
+.text-input:focus {
+  border-color: var(--gold-primary);
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.2);
+}
+
+.or-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 700;
+  margin: 4px 0;
+}
+
+.or-divider::before, .or-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.or-divider:not(:empty)::before { margin-right: 10px; }
+.or-divider:not(:empty)::after { margin-left: 10px; }
+
+.browser-detection-box {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.candidate-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.2s;
+  cursor: pointer;
+}
+
+.candidate-card:hover, .candidate-card.selected {
+  border-color: var(--gold-primary);
+  background: rgba(255, 215, 0, 0.05);
+}
+
+.candidate-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.badge-rec {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.badge-rec.keep-browser { background: rgba(59, 130, 246, 0.2); color: #60a5fa; border: 1px solid #3b82f6; }
+.badge-rec.extract-data { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+.badge-rec.ignore { background: rgba(107, 114, 128, 0.2); color: #9ca3af; border: 1px solid #4b5563; }
+
+.source-live-preview-box {
+  width: 100%;
+  height: 220px;
+  background: #000;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.source-live-preview-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.no-source-placeholder {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.telemetry-strip {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.telemetry-item {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.telemetry-label {
+  font-size: 9px;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.telemetry-value {
+  font-size: 11px;
+  font-weight: 800;
+  font-family: 'JetBrains Mono', monospace;
+  color: #fff;
+}
+
+.layer-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.layer-table th, .layer-table td {
+  padding: 8px 10px;
+  font-size: 11px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.layer-table th {
+  color: var(--text-muted);
+  font-weight: 700;
 }

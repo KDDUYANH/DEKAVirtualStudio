@@ -18,6 +18,9 @@ import { NdiController } from './ndiController.js';
 import { PositionEngine } from '../program/positionEngine.js';
 import { AutoMoveSequencer } from '../program/autoMoveSequencer.js';
 import { PositionId } from './types.js';
+import { SourceInspector } from './sourceInspector.js';
+import { AdapterManager } from '../adapters/adapterManager.js';
+import { SourceAdapterConfig } from './sourceTypes.js';
 
 // Core Singletons
 let store: PersistenceStore;
@@ -27,6 +30,8 @@ let recoveryManager: SourceRecoveryManager;
 let ndiController: NdiController;
 let positionEngine: PositionEngine;
 let autoMoveSequencer: AutoMoveSequencer;
+let sourceInspector: SourceInspector;
+let adapterManager: AdapterManager;
 
 let previewWindow: BrowserWindow | null = null;
 let programWindow: BrowserWindow | null = null;
@@ -65,19 +70,32 @@ async function bootstrap() {
   ndiController = new NdiController(config.ndiStreamName);
   ndiController.start();
 
-  // 7. Start Local Diagnostic HTTP Server (Port 7800 fallback)
+  // 7. Initialize Source Discovery Inspector & Adapter Manager
+  sourceInspector = new SourceInspector();
+  adapterManager = new AdapterManager();
+
+  // Restore configured sources if any
+  if (config.configuredSources && config.configuredSources.length > 0) {
+    for (const sourceCfg of config.configuredSources) {
+      adapterManager.registerAdapter(sourceCfg).catch((err) => {
+        console.warn(`[Bootstrap] Error restoring source adapter ${sourceCfg.id}:`, err);
+      });
+    }
+  }
+
+  // 8. Start Local Diagnostic HTTP Server (Port 7800 fallback)
   startLocalHttpServer(7800);
 
-  // 8. Create PROGRAM Output Window (1920x1080 Compositor)
+  // 9. Create PROGRAM Output Window (1920x1080 Compositor)
   createProgramWindow();
 
-  // 9. Create PREVIEW Operator Control Window
+  // 10. Create PREVIEW Operator Control Window
   createPreviewWindow();
 
-  // 10. Wire Up Event Buses and Safety Gate
+  // 11. Wire Up Event Buses and Safety Gate
   wireUpSafetyAndRecovery();
 
-  // 11. Initial Auth Check
+  // 12. Initial Auth Check
   await authManager.verifySession();
 
   console.log('===============================================================');
@@ -236,6 +254,46 @@ function wireUpSafetyAndRecovery() {
     }
   });
 
+  // Modular Source Adapters Event Wiring
+  adapterManager.on('adapter-status-changed', (event) => {
+    if (previewWindow && !previewWindow.isDestroyed()) {
+      previewWindow.webContents.send('adapter-status-changed', event);
+    }
+  });
+
+  adapterManager.on('adapter-health', (event) => {
+    if (previewWindow && !previewWindow.isDestroyed()) {
+      previewWindow.webContents.send('adapter-health', event);
+    }
+  });
+
+  adapterManager.on('adapter-frame', (frame) => {
+    if (previewWindow && !previewWindow.isDestroyed()) {
+      previewWindow.webContents.send('adapter-frame', frame);
+    }
+    if (programWindow && !programWindow.isDestroyed()) {
+      programWindow.webContents.send('adapter-frame', frame);
+    }
+  });
+
+  adapterManager.on('adapter-game-state', (payload) => {
+    if (previewWindow && !previewWindow.isDestroyed()) {
+      previewWindow.webContents.send('adapter-game-state', payload);
+    }
+    if (programWindow && !programWindow.isDestroyed()) {
+      programWindow.webContents.send('game-state-update', payload.state);
+    }
+  });
+
+  adapterManager.on('adapter-chat-message', (payload) => {
+    if (previewWindow && !previewWindow.isDestroyed()) {
+      previewWindow.webContents.send('adapter-chat-message', payload);
+    }
+    if (programWindow && !programWindow.isDestroyed()) {
+      programWindow.webContents.send('new-chat-message', payload.msg);
+    }
+  });
+
   // Periodic System Telemetry
   setInterval(() => {
     const mem = process.memoryUsage();
@@ -260,7 +318,7 @@ function syncCompositorState() {
 // IPC ACTION HANDLERS (OPERATOR COMMANDS)
 // ============================================================================
 ipcMain.on('open-login', () => {
-  authManager.openLoginWindow(previewWindow || undefined);
+  authManager.openLoginWindow(undefined, previewWindow || undefined);
 });
 
 ipcMain.on('logout', async () => {
@@ -313,6 +371,77 @@ ipcMain.on('reconnect-game', () => {
 
 ipcMain.on('reconnect-chat', () => {
   recoveryManager.resetChatRecovery();
+});
+
+// ============================================================================
+// IPC ACTION HANDLERS (SOURCE DISCOVERY & ADAPTERS)
+// ============================================================================
+ipcMain.handle('scan-source', async (_event, data: { url: string }) => {
+  if (!data || !data.url) {
+    throw new Error('URL is required for source scanning');
+  }
+  return await sourceInspector.inspect(data.url);
+});
+
+ipcMain.handle('detect-browser', async () => {
+  const isAuthed = await authManager.verifySession();
+  const status = authManager.getStatus();
+  return {
+    authenticated: isAuthed,
+    user: { username: status.username },
+    sessionPartition: 'persist:operator_browser_session',
+  };
+});
+
+ipcMain.handle('add-source-adapter', async (_event, config: SourceAdapterConfig) => {
+  const adapter = await adapterManager.registerAdapter(config);
+
+  // Persist into config
+  const currentConfig = store.getConfig();
+  const existingSources = (currentConfig.configuredSources || []).filter((s) => s.id !== config.id);
+  existingSources.push(config);
+  store.updateConfig({ configuredSources: existingSources });
+
+  if (previewWindow && !previewWindow.isDestroyed()) {
+    previewWindow.webContents.send('configured-sources-changed', existingSources);
+  }
+
+  // If chat or game was added, update safety gate
+  if (config.boundLayerKey === 'game') {
+    safetyGate.updateInputs({ isGameVerified: true, isGameHealthy: true });
+  } else if (config.boundLayerKey === 'chat') {
+    safetyGate.updateInputs({ isChatVerified: true, isChatHealthy: true });
+  }
+
+  return {
+    success: true,
+    id: config.id,
+    status: adapter.getStatus(),
+  };
+});
+
+ipcMain.handle('remove-source-adapter', async (_event, id: string) => {
+  const removed = await adapterManager.removeAdapter(id);
+  const currentConfig = store.getConfig();
+  const filtered = (currentConfig.configuredSources || []).filter((s) => s.id !== id);
+  store.updateConfig({ configuredSources: filtered });
+
+  if (previewWindow && !previewWindow.isDestroyed()) {
+    previewWindow.webContents.send('configured-sources-changed', filtered);
+  }
+
+  return { success: removed };
+});
+
+ipcMain.handle('get-configured-sources', () => {
+  return store.getConfig().configuredSources || [];
+});
+
+ipcMain.on('reconnect-adapter', async (_event, id: string) => {
+  const adapter = adapterManager.getAdapter(id);
+  if (adapter) {
+    await adapter.reconnect();
+  }
 });
 
 // ============================================================================
@@ -381,6 +510,8 @@ app.on('window-all-closed', () => {
 app.on('before-quit', () => {
   if (ndiController) ndiController.stop();
   if (localHttpServer) localHttpServer.close();
+  if (sourceInspector) sourceInspector.destroy();
+  if (adapterManager) adapterManager.shutdown();
   if (authManager) authManager.destroy();
   if (recoveryManager) recoveryManager.destroy();
   if (autoMoveSequencer) autoMoveSequencer.destroy();
