@@ -202,9 +202,9 @@ struct KeyPanel: View {
     var body: some View {
         let scene = studio.activeScene
         VStack(alignment: .leading, spacing: 10) {
-            PanelSection(title: "CHROMAKEY MODE (GREEN ONLY)") {
-                Pills(options: [KeyMode.greenScreen, KeyMode.off], selection: studio.sceneBinding(\.keyMode)) { m in
-                    m == .greenScreen ? "GREEN SCREEN" : "OFF"
+            PanelSection(title: "KEYING / MATTE MODE") {
+                Pills(options: KeyMode.allCases, selection: studio.sceneBinding(\.keyMode)) { m in
+                    m.label
                 }
             }
 
@@ -228,13 +228,35 @@ struct KeyPanel: View {
             }
 
             if scene.keyMode == .greenScreen {
-                PanelSection(title: "GREEN KEY TUNING") {
+                PanelSection(title: "CHROMA KEY COLOR") {
+                    Pills(options: KeyColorPreset.allCases, selection: studio.sceneBinding(\.chroma.preset)) { p in
+                        p.rawValue.uppercased()
+                    }
+                    if scene.chroma.preset == .custom {
+                        ColorWellRow(label: "COLOR", color: studio.sceneBinding(\.chroma.customColor))
+                    }
+                }
+
+                PanelSection(title: "CHROMA KEY TUNING") {
                     ValueSlider(label: "SIMILARITY", value: studio.sceneBinding(\.chroma.similarity), range: 0.01...0.5, neutral: 0.10, format: "%.3f")
                     ValueSlider(label: "SMOOTHNESS", value: studio.sceneBinding(\.chroma.smoothness), range: 0.001...0.3, neutral: 0.08, format: "%.3f")
                     ValueSlider(label: "SPILL REDUCTION", value: studio.sceneBinding(\.chroma.spill), range: 0...0.5, neutral: 0.10, format: "%.3f")
                     ValueSlider(label: "EDGE CHOKE", value: studio.sceneBinding(\.chroma.edge), range: -1...1)
                     ValueSlider(label: "FEATHER", value: studio.sceneBinding(\.chroma.feather), range: 0...20, neutral: 2, format: "%.0f px")
                     ValueSlider(label: "OPACITY", value: studio.sceneBinding(\.chroma.opacity), range: 0...1, neutral: 1)
+                }
+            } else if scene.keyMode == .aiCutout {
+                PanelSection(title: "AI PERSON CUTOUT (NEURAL ENGINE)") {
+                    Pills(options: SegmentationQuality.allCases, selection: studio.sceneBinding(\.segmentation.quality)) { q in
+                        q.rawValue.uppercased()
+                    }
+                    Pills(options: [15, 30], selection: studio.sceneBinding(\.segmentation.targetFPS)) { fps in
+                        "\(fps) FPS"
+                    }
+                    ToggleRow(label: "AUTO-FALLBACK TO CHROMA", isOn: studio.sceneBinding(\.segmentation.fallbackToChroma))
+                    Text("Powered by Apple Vision & Neural Engine. No green screen required.")
+                        .font(.system(size: 8.5))
+                        .foregroundStyle(Theme.dim)
                 }
             }
         }

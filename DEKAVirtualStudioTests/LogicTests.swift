@@ -189,4 +189,34 @@ final class SRTConfigurationTests: XCTestCase {
         let output = OutputSettings()
         XCTAssertFalse(output.cleanFeedLiveOutput, "Clean feed must be disabled by default so graphics overlays are broadcast to stream")
     }
+
+    func testKeyModesAndLabels() {
+        XCTAssertEqual(KeyMode.off.label, "OFF")
+        XCTAssertEqual(KeyMode.greenScreen.label, "GREEN SCREEN")
+        XCTAssertEqual(KeyMode.aiCutout.label, "AI CUTOUT")
+        XCTAssertEqual(KeyMode.allCases.count, 3)
+    }
+
+    func testChromaColorPresets() {
+        var chroma = ChromaSettings()
+        chroma.preset = .green
+        XCTAssertEqual(chroma.keyColor, RGBAColor.chromaGreen)
+
+        chroma.preset = .blue
+        XCTAssertEqual(chroma.keyColor, RGBAColor.chromaBlue)
+
+        chroma.preset = .custom
+        chroma.customColor = RGBAColor(r: 0.1, g: 0.8, b: 0.2)
+        XCTAssertEqual(chroma.keyColor, RGBAColor(r: 0.1, g: 0.8, b: 0.2))
+    }
+
+    func testRTMPDestinationURLs() {
+        var output = OutputSettings()
+        output.destination = .rtmpServer
+        output.rtmpURL = "rtmp://live-push.tiktok.com/live/"
+        output.rtmpStreamKey = "stream-key-12345"
+
+        XCTAssertEqual(output.publishURLString, "rtmp://live-push.tiktok.com/live/")
+        XCTAssertEqual(output.publishStreamKey, "stream-key-12345")
+    }
 }

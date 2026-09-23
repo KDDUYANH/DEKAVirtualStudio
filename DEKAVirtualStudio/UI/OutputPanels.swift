@@ -266,7 +266,7 @@ struct OutputPanel: View {
             }
 
             if studio.streamState.isOnAir {
-                PanelSection(title: "SRT TELEMETRY") {
+                PanelSection(title: "\(studio.project.output.destination == .rtmpServer ? "RTMP" : "SRT") TELEMETRY") {
                     Group {
                         Text(String(format: "%.2f Mbps send · %.0f ms RTT", s.videoBitrateKbps / 1000, s.rttMs))
                         Text(String(format: "loss: %.2f%% · bandwidth: %.2f Mbps", s.packetLossPercent, s.availableOutgoingKbps / 1000))

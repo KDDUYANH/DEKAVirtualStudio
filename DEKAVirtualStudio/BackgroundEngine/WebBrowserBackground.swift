@@ -78,7 +78,10 @@ final class WebBrowserBackground: NSObject, WKNavigationDelegate, @unchecked Sen
 
     @MainActor
     private func captureFrame() async {
+        guard !isCapturing else { return }
         guard let wv = webView, wv.bounds.width > 0 else { return }
+        isCapturing = true
+        defer { isCapturing = false }
         let snapConfig = WKSnapshotConfiguration()
         snapConfig.snapshotWidth = 1920
 

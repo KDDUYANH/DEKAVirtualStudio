@@ -62,6 +62,7 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
     private let streamQueue = DispatchQueue(label: "dtek.stream.queue", qos: .userInteractive)
     private let isEncodingFrame = Locked(false)
     private let lastEncodingStart = Locked<Double>(0)
+    private let pendingAudioChunks = Locked(0)
 
     init(gate: PrivacyGate = PrivacyGate()) {
         self.gate = gate
@@ -178,6 +179,7 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
         statsTask = nil
         isPublishing.set(false)
         isEncodingFrame.set(false)
+        pendingAudioChunks.set(0)
 
         if let stream = publishStream {
             await stream.close()
@@ -209,6 +211,9 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
 
     private func scheduleReconnect(cfg: StreamConfiguration) {
         reconnectTask?.cancel()
+        let isRTMP = cfg.srtPublishURL.lowercased().hasPrefix("rtmp://") || cfg.srtPublishURL.lowercased().hasPrefix("rtmps://")
+        let proto = isRTMP ? "RTMP" : "SRT"
+
         reconnectTask = Task { [weak self] in
             guard let self else { return }
             await self.teardownPublish()
@@ -216,20 +221,20 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
             var attempt = 1
             while !self.userStopped && !Task.isCancelled {
                 guard let delay = self.reconnectPolicy.delay(forAttempt: attempt) else {
-                    self.setState(.failed("SRT connection lost: max attempts exceeded"))
-                    self.onEvent?("SRT connection failed after \(self.reconnectPolicy.maxAttempts) attempts.")
+                    self.setState(.failed("\(proto) connection lost: max attempts exceeded"))
+                    self.onEvent?("\(proto) connection failed after \(self.reconnectPolicy.maxAttempts) attempts.")
                     break
                 }
 
                 self.setState(.reconnecting(attempt: attempt))
-                self.onEvent?("SRT disconnected. Reconnecting in \(String(format: "%.1f", delay))s (attempt \(attempt)/\(self.reconnectPolicy.maxAttempts))…")
+                self.onEvent?("\(proto) disconnected. Reconnecting in \(String(format: "%.1f", delay))s (attempt \(attempt)/\(self.reconnectPolicy.maxAttempts))…")
 
                 try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
                 if self.userStopped || Task.isCancelled { break }
 
                 do {
                     try await self.connectAndPublish(cfg)
-                    self.onEvent?("SRT connection restored!")
+                    self.onEvent?("\(proto) connection restored!")
                     self.reconnectTask = nil
                     return
                 } catch {
@@ -367,9 +372,17 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
         }
         let time = AVAudioTime(hostTime: mach_absolute_time())
 
+        // Backpressure guard: if more than 5 chunks are pending, drop to prevent task and buffer pileup
+        if pendingAudioChunks.get() > 5 { return }
+        pendingAudioChunks.mutate { $0 += 1 }
+
         streamQueue.async { [weak self] in
-            guard let self, self.isPublishing.get() else { return }
+            guard let self, self.isPublishing.get() else {
+                self?.pendingAudioChunks.mutate { $0 = max(0, $0 - 1) }
+                return
+            }
             Task {
+                defer { self.pendingAudioChunks.mutate { $0 = max(0, $0 - 1) } }
                 if let stream = self.publishStream {
                     await stream.append(pcm, when: time)
                 } else if let stream = self.rtmpStream {
