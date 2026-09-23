@@ -6,6 +6,8 @@ DerivedData/
 build/
 build-output/
 build_output/
+build-latest/
+*-build.zip
 *.ipa
 *.dSYM.zip
 *.xcresult

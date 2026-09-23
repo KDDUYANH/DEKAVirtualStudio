@@ -141,7 +141,7 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
 
             let _ = try await connection.connect(cfg.srtPublishURL)
             let streamKey = cfg.streamKey.trimmingCharacters(in: .whitespacesAndNewlines)
-            try await stream.publish(streamKey.isEmpty ? nil : streamKey)
+            _ = try await stream.publish(streamKey.isEmpty ? nil : streamKey)
 
             isPublishing.set(true)
             setState(.live)
@@ -192,12 +192,12 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
         publishConnection = nil
 
         if let stream = rtmpStream {
-            try? await stream.close()
+            _ = try? await stream.close()
         }
         rtmpStream = nil
 
         if let conn = rtmpConnection {
-            try? await conn.close()
+            _ = try? await conn.close()
         }
         rtmpConnection = nil
     }
@@ -422,7 +422,8 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
                         s.connectionState = "connected"
                         self.statsBox.set(s)
                         let cb = self.onStats
-                        DispatchQueue.main.async { cb?(s) }
+                        let statsToReport = s
+                        DispatchQueue.main.async { cb?(statsToReport) }
                     }
                 } else if let conn = self.rtmpConnection {
                     let isConn = await conn.connected
@@ -441,7 +442,8 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
                     s.connectionState = "connected"
                     self.statsBox.set(s)
                     let cb = self.onStats
-                    DispatchQueue.main.async { cb?(s) }
+                    let statsToReport = s
+                    DispatchQueue.main.async { cb?(statsToReport) }
                 }
             }
         }
@@ -450,6 +452,7 @@ final class SRTEngine: StreamPublisher, @unchecked Sendable {
     private func setState(_ s: StreamState) {
         stateBox.set(s)
         let cb = onStateChange
-        DispatchQueue.main.async { cb?(s) }
+        let stateToReport = s
+        DispatchQueue.main.async { cb?(stateToReport) }
     }
 }
